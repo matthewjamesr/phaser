@@ -1,0 +1,110 @@
+/* Helpers */
+.nav {
+    margin-bottom: 0px;
+}
+
+#app {
+    height: 100vh;
+}
+
+/* Reset */
+body {
+    position: absolute;
+    margin: 0px;
+    padding: 0px;
+    height: 100vh;
+    width: 100%;
+}
+
+h2 {
+    font-size: 24pt;
+    font-weight: 600;
+}
+
+h3 {
+    font-size: 18pt;
+    font-weight: 400;
+}
+
+h4 {
+    font-size: 16pt;
+    font-weight: 400;
+}
+
+p {
+    font-size: 14pt;
+}
+
+.datepicker-date-display {
+    background: #5e35b1 !important;
+}
+
+.datepicker-cancel, .datepicker-done {
+    color: black !important;
+}
+
+/* Map Related */
+
+#map {
+    z-index: 0;
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+}
+
+.coordinates {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 5px 10px 5px 10px;
+    background: #000;
+    opacity: 0.75;
+    color: #fff;
+  }
+  
+.coordinates p {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12pt;
+}
+
+/* Everything Else */
+
+.pane {
+    width: 100%;
+    padding: 10px 15px 10px 15px;
+    
+}
+
+.pane .firstPhaseBtn1 {
+    width: 65%;
+    min-width: 150px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.pane .firstPhaseBtn2 {
+    width: 25%;
+    min-width: 150px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.myModal {
+    z-index: +50;
+    position: absolute;
+    top: 40px;
+}
+
+.phase {
+    width: 100%;
+    padding: 0px 20px 0px 20px;
+}
+
+.phase p {
+    font-size: 12pt;
+}
+
+.phase i {
+    cursor: pointer;
+}

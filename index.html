@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phaser - WIC Phase Planning</title>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/depends/materialize.min.css"  media="screen,projection"/>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
+    <link type="text/css" rel="stylesheet" href="css/main.css"  media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+
+<body>
+    <div id="app">
+        <div class="row nav"> 
+            <nav>
+                <div class="nav-wrapper deep-purple darken-2">
+                    <a href="#" class="brand-logo center">Phaser</a>
+                    <ul id="nav-mobile" class="right hide-on-med-and-down">
+                        <li><a href="#">Intro</a></li>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="row" style="position: absolute; top: 0px; padding-top: 64px; height: 100%; width: 100%; overflow: hidden;">
+            <div class="col s12 m4 l3 pane" style="height: 100%">
+                <div class="row" style="height: 100%;">
+                    <div class="col s12" style="height: 100%; overflow: auto;">
+                        <h2>Phaser</h2>
+                        <p>Generate red threat data for training missions, brought to you by 14 WPS/WSI.</p>
+                        <p v-if="status.phases.length == 0">Get started by launching a new phase, or importing a saved state.</p>
+                        <div class="center-align">
+                            <a class="waves-effect waves-dark btn-large firstPhaseBtn1 deep-purple darken-1 modal-trigger" data-target="phaseModal">New Phase</a>
+                            <a class="waves-effect waves-dark btn-large firstPhaseBtn2 purple accent-2">Load</a>
+                            <div id="phaseModal" class="modal">
+                                <div class="modal-content left-align">
+                                    <h2>Add Phase</h2>
+                                    <p>Start planning for your next phase. Enter the requested information below to get started. Once added, add threats and emissions.</p>
+                                    <div class="row">
+                                        <div class="input-field col s6">
+                                            <input type="text" class="validate" v-model="addDataForm.phaseName" />
+                                            <label>Phase name</label>
+                                        </div>
+                                        <div class="input-field col s6">
+                                            <input type="text" class="validate" v-model="addDataForm.leadName" />
+                                            <label>Lead name</label>
+                                        </div>
+                                        <div class="input-field col s6">
+                                            <input type="text" class="datepicker" id="dateStart" v-model="addDataForm.dateStart" />
+                                            <label>Start date</label>
+                                        </div>
+                                        <div class="input-field col s6">
+                                            <input type="text" class="datepicker" id="dateEnd" v-model="addDataForm.dateEnd" />
+                                            <label>End date</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="addData('phase')">Start planning</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12"><h3>Phases found: {{status.phases.length}}</h3></div>
+                            <div class="col s12" v-for="phase in status.phases">
+                                <div class="card-panel phase grey lighten-4 left">
+                                    <h4 class="right"><i class="far fa-trash-alt" v-on:click="delData('phases', phase.uuid)"></i></h4>
+                                    <h4 class="left">{{phase.name}} <small>{{phase.dateStart}} - {{phase.dateEnd}}</small></h4>
+                                    <pre style="font-size: 8pt; clear: left;">{{phase.uuid}}</pre>
+                                    <p style="clear: left;"><b>Lead:</b> {{phase.lead}} <b style="margin-left:10px;">Missions added:</b> 0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col m8 l9 grey lighten-4" id="map"></div>
+        </div>
+
+        <div class="ui coordinates">
+            <p>Lng: {{mouse_coordinates.lng.toFixed(5)}}</p>
+            <p>Lat: <span class="right">{{mouse_coordinates.lat.toFixed(5)}}</span></p>
+          </div>
+        </div>
+    </div>
+
+    <!--JavaScript at end of body for optimized loading. Dependancies first.-->
+    <script type="text/javascript" src="js/depends/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="js/depends/vue.min.js"></script>
+    <script type="text/javascript" src="js/depends/materialize.min.js"></script>
+    <script type="text/javascript" src="js/depends/localstoragedb.min.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
+    <script type="text/javascript" src="js/depends/turf.min.js"></script>
+    <script src="https://kit.fontawesome.com/e2eb6553b9.js" crossorigin="anonymous"></script>
+
+    <!--Import main logic-->
+    <script type="module" src="js/db.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
