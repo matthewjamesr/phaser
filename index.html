@@ -36,7 +36,13 @@
                         <p v-if="status.phases.length == 0">Get started by launching a new phase, or importing a saved state.</p>
                         <div class="center-align">
                             <a class="waves-effect waves-dark btn-large firstPhaseBtn1 deep-purple darken-1 modal-trigger" data-target="phaseModal">New Phase</a>
-                            <a class="waves-effect waves-dark btn-large firstPhaseBtn2 purple accent-2">Load</a>
+                            <a class="waves-effect waves-dark btn-large firstPhaseBtn2 dropdown-trigger purple accent-2" data-target="managePhaseDropdown">Manage</a>
+                            <ul class="dropdown-content" id="managePhaseDropdown">
+                                <li><a href="#" class="black-text" v-on:click="document.getElementById('importState').click()">Import</a></li>
+                                <input type="file" @change="importData" id="importState" ref="importState" style="display: none;" />
+                                <li v-if="status.phases.length > 0"><a href="#" class="black-text" v-on:click="exportData()">Export</a></li>
+                                <li><a href="#" class="black-text" v-on:click="clearData()">Clear state</a></li>
+                            </ul>
                             <div id="phaseModal" class="modal">
                                 <div class="modal-content left-align">
                                     <h2>Add Phase</h2>
@@ -68,7 +74,7 @@
                         <div class="row">
                             <div class="col s12"><h3>Phases found: {{status.phases.length}}</h3></div>
                             <div class="col s12" v-for="phase in status.phases">
-                                <div class="card-panel phase grey lighten-4 left">
+                                <div class="card-panel phase left" v-on:click="enterPhaseBuilder(phase.uuid)">
                                     <h4 class="right"><i class="far fa-trash-alt" v-on:click="delData('phases', phase.uuid)"></i></h4>
                                     <h4 class="left">{{phase.name}} <small>{{phase.dateStart}} - {{phase.dateEnd}}</small></h4>
                                     <pre style="font-size: 8pt; clear: left;">{{phase.uuid}}</pre>
@@ -97,6 +103,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
     <script type="text/javascript" src="js/depends/turf.min.js"></script>
     <script src="https://kit.fontawesome.com/e2eb6553b9.js" crossorigin="anonymous"></script>
+    <script src="http://cdn.jsdelivr.net/g/filesaver.js"></script>
 
     <!--Import main logic-->
     <script type="module" src="js/db.js"></script>

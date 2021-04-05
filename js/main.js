@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
-import * as exports from './db.js';
+import { v4 as uuidv4 } from 'https://jspm.dev/uuid'
+import * as exports from './db.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
 /* Object Models */
@@ -54,7 +54,8 @@ var app = new Vue({
             phases: [],
             threats: [],
             emissions: []
-        }
+        },
+        importState: ''
     },
     methods: {
         initMap: function () {
@@ -97,6 +98,37 @@ var app = new Vue({
         },
         delData: function (type, uuid) {
             this.status = dbDel(type, uuid)
+        },
+        exportData: function () {
+            var blob = new Blob([JSON.stringify(this.status, null, 2)], {type: "text/json;charset=utf-8"})
+            var date = new Date()
+            saveAs(blob, `phaser-export-${date.toISOString().slice(0,10)}-${date.getHours()}${date.getMinutes()}.json`)
+        },
+        importData: function () {
+            let file = this.$refs.importState.files[0]
+            let reader = new FileReader()
+            reader.readAsText(file, "UTF-8")
+            reader.onload =  evt => {
+                var self = this
+                let data = JSON.parse(evt.target.result)
+                data.phases.forEach(function (phase) {
+                    self.status.phases.push(phase)
+                    dbAdd("phases", phase)
+                })
+                console.log("Successfully imported Phaser state!")
+            }
+            reader.onerror = evt => {
+                console.error(evt)
+            }
+        },
+        clearData: function () {
+            dbReset()
+            this.status.phases = []
+            this.status.threats = []
+            this.status.emissions = []
+        },
+        enterPhaseBuilder: function (phase) {
+            alert(phase)
         }
     },
     mounted: function () {
@@ -106,6 +138,7 @@ var app = new Vue({
                 $('.modal').modal()
                 $('.datepicker').datepicker()
                 $('.tooltipped').tooltip()
+                $('.dropdown-trigger').dropdown()
                 self.status = dbInit()
                 console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(this.status)}`)
                 self.initMap()

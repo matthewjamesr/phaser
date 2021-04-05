@@ -99,6 +99,12 @@ p {
 .phase {
     width: 100%;
     padding: 0px 20px 0px 20px;
+    transition: 0.6s;
+}
+
+.phase:hover {
+    cursor: pointer;
+    background: #eeeeee;
 }
 
 .phase p {
