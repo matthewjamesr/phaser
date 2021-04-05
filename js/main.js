@@ -4,7 +4,7 @@ Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
 /* Object Models */
 function Phase(name, lead, dateStart, dateEnd, missions) {
-    this.uuid = uuid.uuidv4()
+    this.uuid = uuid.v4()
     this.name = name
     this.lead = lead
     this.dateStart = dateStart
@@ -13,7 +13,7 @@ function Phase(name, lead, dateStart, dateEnd, missions) {
 }
 
 function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
-    this.uuid = uuid.uuidv4()
+    this.uuid = uuid.v4()
     this.OB = OB
     this.phaseId = phaseId
     this.name = name
