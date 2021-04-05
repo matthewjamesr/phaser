@@ -55,7 +55,8 @@ var app = new Vue({
             threats: [],
             emissions: []
         },
-        importState: ''
+        importState: '',
+        editingPhase: 0
     },
     methods: {
         initMap: function () {
@@ -128,7 +129,17 @@ var app = new Vue({
             this.status.emissions = []
         },
         enterPhaseBuilder: function (phase) {
-            alert(phase)
+            //$('.pane').addClass('animate__animated animate__slideOutRight')
+            $('.pane').toggle()
+            //$('.phaseBuilder').addClass('animate__animated animate__slideInLeft')
+            $('.phaseBuilder').toggle()
+            this.editingPhase = this.status.phases[phase]
+        },
+        resetUI: function () {
+            $('.pane').removeClass('animate__animated animate__bounceOutLeft')
+            $('.phaseBuilder').removeClass('animate__animated animate__slideInLeft')
+            $('.pane').show()
+            $('.phaseBuilder').hide()
         }
     },
     mounted: function () {

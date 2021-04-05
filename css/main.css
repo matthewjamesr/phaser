@@ -114,3 +114,12 @@ p {
 .phase i {
     cursor: pointer;
 }
+
+.phaseBuilder {
+    display: none;
+}
+
+.phaseBuilder i {
+    cursor: pointer;
+    margin-right: 10px;
+}

@@ -8,6 +8,7 @@
     <link type="text/css" rel="stylesheet" href="css/depends/materialize.min.css"  media="screen,projection"/>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
     <link type="text/css" rel="stylesheet" href="css/main.css"  media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="css/depends/animate.min.css"  media="screen,projection"/>
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -18,7 +19,7 @@
         <div class="row nav"> 
             <nav>
                 <div class="nav-wrapper deep-purple darken-2">
-                    <a href="#" class="brand-logo center">Phaser</a>
+                    <a href="#!" class="brand-logo center" style="z-index: +50;" v-on:click="resetUI()">Phaser</a>
                     <ul id="nav-mobile" class="right hide-on-med-and-down">
                         <li><a href="#">Intro</a></li>
                         <li><a href="#">Status</a></li>
@@ -73,8 +74,8 @@
                         </div>
                         <div class="row">
                             <div class="col s12"><h3>Phases found: {{status.phases.length}}</h3></div>
-                            <div class="col s12" v-for="phase in status.phases">
-                                <div class="card-panel phase left" v-on:click="enterPhaseBuilder(phase.uuid)">
+                            <div class="col s12" v-for="(phase, index) in status.phases">
+                                <div class="card-panel phase left" v-on:click="enterPhaseBuilder(index)">
                                     <h4 class="right"><i class="far fa-trash-alt" v-on:click="delData('phases', phase.uuid)"></i></h4>
                                     <h4 class="left">{{phase.name}} <small>{{phase.dateStart}} - {{phase.dateEnd}}</small></h4>
                                     <pre style="font-size: 8pt; clear: left;">{{phase.uuid}}</pre>
@@ -82,6 +83,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col s12 m4 l3 phaseBuilder" style="height: 100%">
+                <div class="row" style="height: 100%;">
+                    <div class="col s12" style="height: 100%; overflow: auto;">
+                        <h2><i class="fas fa-long-arrow-alt-left" v-on:click="resetUI()"></i>{{editingPhase.name}}</h2>
                     </div>
                 </div>
             </div>
