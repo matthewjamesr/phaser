@@ -1,10 +1,10 @@
-import { v4 as uuidv4 } from 'https://jspm.dev/uuid'
+import * as uuid from "uuid";
 import * as exports from './db.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
 /* Object Models */
 function Phase(name, lead, dateStart, dateEnd, missions) {
-    this.uuid = uuidv4()
+    this.uuid = uuid.uuidv4()
     this.name = name
     this.lead = lead
     this.dateStart = dateStart
@@ -13,7 +13,7 @@ function Phase(name, lead, dateStart, dateEnd, missions) {
 }
 
 function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
-    this.uuid = uuidv4()
+    this.uuid = uuid.uuidv4()
     this.OB = OB
     this.phaseId = phaseId
     this.name = name
@@ -24,7 +24,7 @@ function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
 }
 
 function Emission(threatId, type, majorAxisMeters, minorAxisMeters, ellipseAngle, name, details, emitDTG) {
-    this.uuid = uuidv4()
+    this.uuid = uuid.uuidv4()
     this.threatId = threatId
     this.type = type
     this.majorAxisMeters = majorAxisMeters
