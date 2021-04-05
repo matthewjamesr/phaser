@@ -99,6 +99,7 @@ var app = new Vue({
         },
         delData: function (type, uuid) {
             this.status = dbDel(type, uuid)
+            this.resetUI()
         },
         exportData: function () {
             var blob = new Blob([JSON.stringify(this.status, null, 2)], {type: "text/json;charset=utf-8"})
@@ -129,11 +130,16 @@ var app = new Vue({
             this.status.emissions = []
         },
         enterPhaseBuilder: function (phase) {
-            //$('.pane').addClass('animate__animated animate__slideOutRight')
-            $('.pane').toggle()
-            //$('.phaseBuilder').addClass('animate__animated animate__slideInLeft')
-            $('.phaseBuilder').toggle()
-            this.editingPhase = this.status.phases[phase]
+            if (phase != null) {
+                //$('.pane').addClass('animate__animated animate__slideOutRight')
+                $('.pane').toggle()
+                //$('.phaseBuilder').addClass('animate__animated animate__slideInLeft')
+                $('.phaseBuilder').toggle()
+                this.editingPhase = this.status.phases[phase]
+            } else {
+                this.resetUI()
+            }
+            
         },
         resetUI: function () {
             $('.pane').removeClass('animate__animated animate__bounceOutLeft')
