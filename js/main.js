@@ -117,6 +117,7 @@ var app = new Vue({
                     self.status.phases.push(phase)
                     dbAdd("phases", phase)
                 })
+                this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
             }
             reader.onerror = evt => {
@@ -157,7 +158,7 @@ var app = new Vue({
                 $('.tooltipped').tooltip()
                 $('.dropdown-trigger').dropdown()
                 self.status = dbInit()
-                console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(this.status)}`)
+                console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
             });
         })
