@@ -35,6 +35,24 @@ function Emission(threatId, type, majorAxisMeters, minorAxisMeters, ellipseAngle
     this.emitDTG = emitDTG
 }
 
+const animateCSS = (element, animation, prefix = 'animate__') =>
+    // We create a Promise and return it
+    new Promise((resolve, reject) => {
+    const animationName = `${prefix}${animation}`;
+    const node = document.querySelector(element);
+
+    node.classList.add(`${prefix}animated`, animationName);
+
+    // When the animation ends, we clean the classes and resolve the Promise
+    function handleAnimationEnd(event) {
+        event.stopPropagation();
+        node.classList.remove(`${prefix}animated`, animationName);
+        resolve('Animation ended');
+    }
+
+    node.addEventListener('animationend', handleAnimationEnd, {once: true});
+});
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -132,21 +150,27 @@ var app = new Vue({
         },
         enterPhaseBuilder: function (phase) {
             if (phase != null) {
-                //$('.pane').addClass('animate__animated animate__slideOutRight')
                 $('.pane').toggle()
-                //$('.phaseBuilder').addClass('animate__animated animate__slideInLeft')
                 $('.phaseBuilder').toggle()
+                $(".map .lock #step1").css("text-decoration", "line-through")
+                $(".map .lock #step1").css("color", "#757575")
                 this.editingPhase = this.status.phases[phase]
             } else {
                 this.resetUI()
             }
             
         },
+        unlockMap: function () {
+            $(".map .lock").hide()
+        },
         resetUI: function () {
             $('.pane').removeClass('animate__animated animate__bounceOutLeft')
             $('.phaseBuilder').removeClass('animate__animated animate__slideInLeft')
             $('.pane').show()
             $('.phaseBuilder').hide()
+            $(".map .lock #step1").css("text-decoration", "none")
+            $(".map .lock #step1").css("color", "#fff")
+            $(".map .lock").show()
         }
     },
     mounted: function () {

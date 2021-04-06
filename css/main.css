@@ -45,11 +45,26 @@ p {
 
 /* Map Related */
 
-#map {
+.map {
     z-index: 0;
     margin: 0px;
     padding: 0px;
     height: 100%;
+}
+
+.map .lock {
+    z-index: 2;
+    position: absolute;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    background: #000;
+    color: #fff;
+    opacity: 0.75;
+}
+
+.map .lock p {
+    font-size: 16pt;
 }
 
 .coordinates {

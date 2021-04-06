@@ -93,11 +93,23 @@
                     <div class="col s12" style="height: 100%; overflow: auto;">
                         <h3><i class="fas fa-long-arrow-alt-left" v-on:click="resetUI()"></i>{{editingPhase.name}} <small>{{editingPhase.dateStart}} - {{editingPhase.dateEnd}}</small></h3>
                         <pre style="font-size: 8pt; clear: left;">{{editingPhase.uuid}}</pre>
-                        <p style="clear: left;"><b>Lead:</b> {{editingPhase.lead}} <b style="margin-left:10px;">Missions added:</b> 0</p>
+                        <p style="font-size: 15pt; clear: left;">
+                            <b>Lead:</b> {{editingPhase.lead}} 
+                            <b style="margin-left:10px;">Missions (0)</b> 
+                            <i class="fas fa-plus purple-text text-accent-2 right-align" v-on:click="unlockMap()" style="margin-left: 5px;"></i>
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="col m8 l9 grey lighten-4" id="map"></div>
+            <div class="map col m8 l9 grey lighten-4" id="map">
+                <div class="lock valign-wrapper">
+                    <div class="col s12 center-align">
+                        <h2>Mission Builder</h2>
+                        <p id="step1">1. Select a phase</p>
+                        <p>2. Create mission</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="ui coordinates">
