@@ -89,6 +89,21 @@ p {
 
 /* Everything Else */
 
+#app .loading {
+    z-index: +10;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height:100%;
+    width: 100%;
+    background: #212121;
+    color: #fff;
+}
+
+#app .loading .preloader-wrapper {
+    margin-top: 15px;
+}
+
 .pane {
     width: 100%;
     padding: 10px 15px 10px 15px;

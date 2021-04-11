@@ -1,4 +1,4 @@
-import * as uuid from "uuid";
+import * as uuid from "uuid"
 import * as exports from './db.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
@@ -184,6 +184,12 @@ var app = new Vue({
                 self.status = dbInit()
                 console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
+                setTimeout(function () {
+                    $('.loading').addClass('animate__animated animate__fadeOut')
+                    setTimeout(function () {
+                        $('.loading').hide()
+                    }, 1000)
+                }, 1000)
             });
         })
     }
