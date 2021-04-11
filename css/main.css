@@ -48,19 +48,23 @@ p {
 .map {
     z-index: 0;
     margin: 0px;
-    padding: 0px;
+    padding: 0px !important;
     height: 100%;
 }
 
 .map .lock {
     z-index: 2;
-    position: absolute;
+    position: relative;
     left: 0px;
     height: 100%;
     width: 100%;
     background: #000;
     color: #fff;
     opacity: 0.75;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;
 }
 
 .map .lock p {
