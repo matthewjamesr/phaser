@@ -46,16 +46,30 @@ export function dbSeed() {
     console.log("Committed")
 }
 
-export function dbAdd(type, data) {
-    db.insert(type, data)
-    db.commit()
-    data = {}
-    data.phases = db.queryAll("phases")
-    data.threats = db.queryAll("threats")
-    data.emissions = db.queryAll("emissions")
-    console.log(`Inserting record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
-    return data
+export function dbAdd(type, data, selectedUUID) {
+    if (type === "missions") {
+        let update = db.update("phases", {uuid: selectedUUID}, function (row) {
+            row.missions.push(data)
+            db.commit()
+            return row
+        })
 
+        data = {}
+        data.phases = db.queryAll("phases")
+        data.threats = db.queryAll("threats")
+        data.emissions = db.queryAll("emissions")
+        console.log(`Inserting mission record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
+        return data
+    } else {
+        db.insert(type, data)
+        db.commit()
+        data = {}
+        data.phases = db.queryAll("phases")
+        data.threats = db.queryAll("threats")
+        data.emissions = db.queryAll("emissions")
+        console.log(`Inserting record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
+        return data
+    }
 }
 
 export function dbDel(type, uuid) {

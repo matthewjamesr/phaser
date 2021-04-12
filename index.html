@@ -100,7 +100,7 @@
                                     <div v-on:click="enterPhaseBuilder(index)">
                                         <h4 class="left">{{phase.name}} <small>{{phase.dateStart}} - {{phase.dateEnd}}</small></h4>
                                         <pre style="font-size: 8pt; clear: left;">{{phase.uuid}}</pre>
-                                        <p style="clear: left;"><b>Lead:</b> {{phase.lead}} <b style="margin-left:10px;">Missions added:</b> 0</p>
+                                        <p style="clear: left;"><b>Lead:</b> {{phase.lead}} <b style="margin-left:10px;">Missions added:</b> {{phase.missions.length}}</p>
                                     </div>
                                 </div>
                             </div>
@@ -115,9 +115,61 @@
                         <pre style="font-size: 8pt; clear: left;">{{editingPhase.uuid}}</pre>
                         <p style="font-size: 15pt; clear: left;">
                             <b>Lead:</b> {{editingPhase.lead}} 
-                            <b style="margin-left:10px;">Missions (0)</b> 
-                            <i class="fas fa-plus purple-text text-accent-2 right-align" v-on:click="unlockMap()" style="margin-left: 5px;"></i>
+                            <b style="margin-left:10px;">Add mission:</b> 
+                            <a class="modal-trigger" data-target="missionModal"><i class="fas fa-plus purple-text text-accent-2 right-align" style="margin-left: 5px;"></i></a>
                         </p>
+                        <div class="row">
+                            <div class="col s12" v-for="(mission, index) in editingPhase.missions">
+                                <div class="card-panel phase left">
+                                    <h4 class="right"><i class="far fa-trash-alt"></i></h4>
+                                    <div>
+                                        <h4 class="left">{{mission.name}} <small>{{mission.date}} - {{mission.onStation}}</small></h4>
+                                        <pre style="font-size: 8pt; clear: left;">{{mission.uuid}}</pre>
+                                        <p style="clear: left;"><b>IOR:</b> {{mission.ior}} <b style="margin-left:10px;">MPC Chief:</b> {{mission.mpcChief}} <b style="margin-left:10px;">Range:</b> {{mission.range}}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="missionModal" class="modal">
+                    <div class="modal-content left-align">
+                        <h2>Add Mission</h2>
+                        <p>Missions will appear on Phaser's planning timeline.</p>
+                        <div class="row">
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="addDataForm.missionName" />
+                                <label>Mission name</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <select v-model="addDataForm.missionRange">
+                                    <option value="" disabled selected>Choose your option</option>
+                                    <option value="Pilsung">Pilsung</option>
+                                    <option value="Harrumph">Harrumph</option>
+                                    <option value="Voodoo">Voodoo</option>
+                                </select>
+                                <label>Range</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="addDataForm.missionIOR" />
+                                <label>Mission IOR</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="addDataForm.missionMpcChief" />
+                                <label>Mission MPC Chief</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="datepicker" id="missionDate" v-model="addDataForm.missionDate" />
+                                <label>Date</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="timepicker" id="missionTime" v-model="addDataForm.missionOnStation" />
+                                <label>On-station time</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="addData('mission')">Create Mission</a>
                     </div>
                 </div>
             </div>

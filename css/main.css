@@ -7,6 +7,10 @@
     height: 100vh;
 }
 
+.clear-z-index {
+    z-index: +100;
+}
+
 /* Reset */
 body {
     position: absolute;
@@ -35,7 +39,7 @@ p {
     font-size: 14pt;
 }
 
-.datepicker-date-display {
+.datepicker-date-display, .timepicker-digital-display {
     background: #5e35b1 !important;
 }
 

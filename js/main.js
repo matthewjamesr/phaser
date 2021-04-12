@@ -12,6 +12,16 @@ function Phase(name, lead, dateStart, dateEnd, missions) {
     this.missions = missions
 }
 
+function Mission(name, date, onStation, ior, mpcChief, range) {
+    this.uuid = uuid.v4()
+    this.name = name
+    this.date = date
+    this.onStation = onStation
+    this.ior = ior
+    this.mpcChief = mpcChief
+    this.range = range
+}
+
 function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
     this.uuid = uuid.v4()
     this.OB = OB
@@ -24,7 +34,7 @@ function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
 }
 
 function Emission(threatId, type, majorAxisMeters, minorAxisMeters, ellipseAngle, name, details, emitDTG) {
-    this.uuid = uuid.uuidv4()
+    this.uuid = uuid.v4()
     this.threatId = threatId
     this.type = type
     this.majorAxisMeters = majorAxisMeters
@@ -61,7 +71,13 @@ var app = new Vue({
             leadName: '',
             dateStart: '',
             dateEnd: '',
-            missions: []
+            missions: [],
+            missionName: '',
+            missionDate: '',
+            missionOnStation: '',
+            missionIOR: '',
+            missionMpcChief: '',
+            missionRange: ''
         },
         map: map,
         mouse_coordinates: {
@@ -74,7 +90,8 @@ var app = new Vue({
             emissions: []
         },
         importState: '',
-        editingPhase: 0
+        editingPhase: 0,
+        selectedMissionUID: ''
     },
     methods: {
         initMap: function () {
@@ -100,6 +117,14 @@ var app = new Vue({
                 let data = new Phase(self.addDataForm.phaseName, self.addDataForm.leadName, $('#dateStart').val(), $('#dateEnd').val(), self.addDataForm.missions)
                 self.status = dbAdd("phases", data)
             }
+
+            if (type === "mission") {
+                $('#missionModal').modal('close')
+                let data = new Mission(self.addDataForm.missionName, $('#missionDate').val(), $('#missionTime').val(), self.addDataForm.missionIOR, self.addDataForm.missionMpcChief, self.addDataForm.missionRange)
+                self.status = exports.dbAdd("missions", data, self.selectedMissionUID)
+                self.unlockMap()
+            }
+
             if (type === "threat") {
                 let data = new Threat(self.addDataForm.OB, self.addDataForm.phaseId, self.addDataForm.name, self.addDataForm.location, $('#dateStart').val(), $('#dateEnd').val(), self.addDataForm.persist)
                 self.status = dbAdd("threats", data)
@@ -155,6 +180,11 @@ var app = new Vue({
                 $(".map .lock #step1").css("text-decoration", "line-through")
                 $(".map .lock #step1").css("color", "#757575")
                 this.editingPhase = this.status.phases[phase]
+                this.selectedMissionUID = this.status.phases[phase].uuid
+                
+                if (this.status.phases[phase].missions.length > 0) {
+                    this.unlockMap()
+                }
             } else {
                 this.resetUI()
             }
@@ -179,8 +209,10 @@ var app = new Vue({
             $(document).ready(function(){
                 $('.modal').modal()
                 $('.datepicker').datepicker()
+                $('.timepicker').timepicker()
                 $('.tooltipped').tooltip()
                 $('.dropdown-trigger').dropdown()
+                $('select').formSelect()
                 self.status = dbInit()
                 console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
