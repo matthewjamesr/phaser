@@ -120,10 +120,10 @@
                         </p>
                         <div class="row">
                             <div class="col s12" v-for="(mission, index) in editingPhase.missions">
-                                <div class="card-panel phase left" v-on:click="e => selectActiveMission(index, e)" style="position: relative; padding-left: 35px;">
+                                <div class="card-panel phase left" style="position: relative; padding-left: 35px;">
                                     <div class="activeMission left">Active</div>
                                     <h4 class="right" v-on:click="delData('missions', editingPhase.uuid, mission.uuid)"><i class="far fa-trash-alt"></i></h4>
-                                    <div>
+                                    <div v-on:click="e => selectActiveMission(index, e)">
                                         <h4 class="left">{{mission.name}} <small>{{mission.date}} - {{mission.onStation}}</small></h4>
                                         <pre style="font-size: 8pt; clear: left;">{{mission.uuid}}</pre>
                                         <p style="clear: left;"><b>IOR:</b> {{mission.ior}} <b style="margin-left:10px;">MPC Chief:</b> {{mission.mpcChief}} <b style="margin-left:10px;">Range:</b> {{mission.range}}</p>

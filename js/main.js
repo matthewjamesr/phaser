@@ -205,7 +205,7 @@ var app = new Vue({
             this.activeMissionIndex = missionIndex
             $('.activeMission').hide()
             $('.activeMission', e.target.offsetParent).show()
-            console.log()
+            console.log('selected')
         },
         unlockMap: function () {
             $(".map .lock").hide()
