@@ -140,9 +140,17 @@ var app = new Vue({
                 
             }
         },
-        delData: function (type, uuid) {
-            this.status = dbDel(type, uuid)
-            this.resetUI()
+        delData: function (type, uuid, missionUUID) {
+            this.status = dbDel(type, uuid, missionUUID)
+            if (missionUUID != null) {
+                this.status.phases.forEach(function(phase) {
+                    if (phase.uuid === uuid && phase.missions.length == 0) {
+                        $(".map .lock").show()
+                    }
+                })
+            } else {
+                this.resetUI()
+            }
         },
         exportData: function () {
             var blob = new Blob([JSON.stringify(this.status, null, 2)], {type: "text/json;charset=utf-8"})

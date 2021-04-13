@@ -121,7 +121,7 @@
                         <div class="row">
                             <div class="col s12" v-for="(mission, index) in editingPhase.missions">
                                 <div class="card-panel phase left">
-                                    <h4 class="right"><i class="far fa-trash-alt"></i></h4>
+                                    <h4 class="right" v-on:click="delData('missions', editingPhase.uuid, mission.uuid)"><i class="far fa-trash-alt"></i></h4>
                                     <div>
                                         <h4 class="left">{{mission.name}} <small>{{mission.date}} - {{mission.onStation}}</small></h4>
                                         <pre style="font-size: 8pt; clear: left;">{{mission.uuid}}</pre>
