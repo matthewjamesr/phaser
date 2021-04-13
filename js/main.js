@@ -209,6 +209,8 @@ var app = new Vue({
         },
         unlockMap: function () {
             $(".map .lock").hide()
+            $(".map .editor").show()
+            $(".coordinates").show()
         },
         resetUI: function () {
             $('.pane').removeClass('animate__animated animate__bounceOutLeft')
@@ -217,6 +219,8 @@ var app = new Vue({
             $('.phaseBuilder').hide()
             $(".map .lock #step1").css("text-decoration", "none")
             $(".map .lock #step1").css("color", "#fff")
+            $(".map .editor").hide()
+            $(".coordinates").hide()
             $(".map .lock").show()
             $('.activeMission').hide()
         }

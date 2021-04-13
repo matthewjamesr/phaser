@@ -92,6 +92,7 @@ p {
 }
 
 .coordinates {
+    display: none;
     position: absolute;
     bottom: 0px;
     right: 0px;
@@ -105,6 +106,39 @@ p {
     margin-top: 2px;
     margin-bottom: 2px;
     font-size: 12pt;
+}
+
+.map .editor {
+    display: none;
+    z-index: 2;
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    padding: 20px 15px 10px 15px;
+    background: #212121;
+    color: #fff;
+    border-radius: 10px;
+    opacity: 0.85;
+}
+
+.map .editor i {
+    display: block;
+    text-align: center;
+    font-size: 16pt;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.map .editor .general {
+    color: #18ffff;
+}
+
+.map .editor .threat {
+    color: #e53935;
+}
+
+.map .editor .emission {
+    color: #00e676;
 }
 
 /* Everything Else */
