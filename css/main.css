@@ -46,6 +46,22 @@ p {
 .datepicker-cancel, .datepicker-done {
     color: black !important;
 }
+.activeMission {
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 25px;
+    background: #5e35b1;
+    color: #fff;
+    writing-mode: sideways-lr;
+    text-orientation: mixed;
+    text-align: center;
+    line-height: 25px;
+    font-weight: 300;
+    font-size: 14pt;
+}
 
 /* Map Related */
 

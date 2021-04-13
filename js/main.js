@@ -91,7 +91,9 @@ var app = new Vue({
         },
         importState: '',
         editingPhase: 0,
-        selectedMissionUID: ''
+        selectedMissionUID: '',
+        activePhaseIndex: 0,
+        activeMissionIndex: 0
     },
     methods: {
         initMap: function () {
@@ -188,6 +190,7 @@ var app = new Vue({
                 $(".map .lock #step1").css("text-decoration", "line-through")
                 $(".map .lock #step1").css("color", "#757575")
                 this.editingPhase = this.status.phases[phase]
+                this.activePhaseIndex = phase
                 this.selectedMissionUID = this.status.phases[phase].uuid
                 
                 if (this.status.phases[phase].missions.length > 0) {
@@ -197,6 +200,12 @@ var app = new Vue({
                 this.resetUI()
             }
             
+        },
+        selectActiveMission: function (missionIndex, e) {
+            this.activeMissionIndex = missionIndex
+            $('.activeMission').hide()
+            $('.activeMission', e.target.offsetParent).show()
+            console.log()
         },
         unlockMap: function () {
             $(".map .lock").hide()
@@ -209,6 +218,7 @@ var app = new Vue({
             $(".map .lock #step1").css("text-decoration", "none")
             $(".map .lock #step1").css("color", "#fff")
             $(".map .lock").show()
+            $('.activeMission').hide()
         }
     },
     mounted: function () {
