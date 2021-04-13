@@ -204,13 +204,13 @@ var app = new Vue({
         selectActiveMission: function (missionIndex, e) {
             this.activeMissionIndex = missionIndex
             $('.activeMission').hide()
+            $(".map .editor").show()
+            $(".coordinates").show()
             $('.activeMission', e.target.offsetParent).show()
-            console.log('selected')
         },
         unlockMap: function () {
             $(".map .lock").hide()
-            $(".map .editor").show()
-            $(".coordinates").show()
+            $(".coordinates").hide()
         },
         resetUI: function () {
             $('.pane').removeClass('animate__animated animate__bounceOutLeft')
