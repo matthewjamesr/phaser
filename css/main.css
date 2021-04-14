@@ -121,7 +121,7 @@ p {
     position: absolute;
     left: 15px;
     top: 15px;
-    padding: 20px 15px 10px 15px;
+    padding: 15px 15px 5px 15px;
     background: #212121;
     color: #fff;
     border-radius: 10px;
@@ -148,12 +148,16 @@ p {
     color: #00e676;
 }
 
+.map .editor-basemap {
+    left: 15px;
+    top: 210px;
+}
+
 .map .editor-pane {
     z-index: 2;
     position: absolute;
     left: 80px;
     top: 15px;
-    padding: 20px 15px 10px 15px;
     background: #212121;
     color: #fff;
     border-radius: 10px;

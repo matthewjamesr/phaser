@@ -80,6 +80,7 @@ var app = new Vue({
             missionRange: ''
         },
         map: map,
+        mapStyle: 'streets-v11',
         mouse_coordinates: {
             lng: 0,
             lat: 0
@@ -102,15 +103,43 @@ var app = new Vue({
             mapboxgl.accessToken = 'pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg'
             self.map = new mapboxgl.Map({
                 container: 'map',
-                style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+                style: `mapbox://styles/mapbox/${self.mapStyle}`, // stylesheet location
                 center: [-86.70, 30.56], // starting position [lng, lat]
                 zoom: 10 // starting zoom
+            })
+
+            self.map.on('styledata', function () {
+                self.map.addSource('mapbox-dem', {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                    'tileSize': 512,
+                    'maxzoom': 14
+                })
+                self.map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 })
+                self.map.addLayer({
+                    'id': 'sky',
+                    'type': 'sky',
+                    'paint': {
+                        'sky-type': 'atmosphere',
+                        'sky-atmosphere-sun': [0.0, 0.0],
+                        'sky-atmosphere-sun-intensity': 15
+                    }
+                })
             })
 
             self.map.on('mousemove', function(e) {
                 self.mouse_coordinates.lng = e.lngLat.lng
                 self.mouse_coordinates.lat = e.lngLat.lat
             })
+        },
+        changeMapStyle: function () {
+            if (this.mapStyle === 'streets-v11') {
+                this.mapStyle = 'satellite-streets-v10'
+                this.map.setStyle(`mapbox://styles/mapbox/satellite-streets-v10`)
+            } else {
+                this.mapStyle = 'streets-v11'
+                this.map.setStyle(`mapbox://styles/mapbox/streets-v11`)
+            }
         },
         addData: function (type) {
             var self = this
