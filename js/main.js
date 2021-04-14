@@ -141,6 +141,21 @@ var app = new Vue({
                 this.map.setStyle(`mapbox://styles/mapbox/streets-v11`)
             }
         },
+        startPointCapture: function (type) {
+            $('.map .drop-point-alert').show()
+            this.map.getCanvas().style.cursor = 'crosshair';
+            var self = this
+            this.map.on('click', function(e) {
+                $('.map .drop-point-alert').removeClass('animate__animated animate__fadeIn')
+                $('.map .drop-point-alert').addClass('animate__animated animate__fadeOut')
+                self.map.getCanvas().style.cursor = 'grab';
+                setTimeout(function () {
+                    $('.map .drop-point-alert').hide()
+                    $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
+                    $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
+                }, 1000)
+            })
+        },
         addData: function (type) {
             var self = this
             $('#phaseModal').modal('close')

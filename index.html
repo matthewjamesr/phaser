@@ -186,7 +186,7 @@
                     </div>
                 </div>
                 <div class="editor animate__animated animate__slideInLeft">
-                    <i class="fas fa-map-marker-alt general tooltipped" id="addInfoPoint" data-position="right" data-tooltip="Add point"></i>
+                    <i class="fas fa-map-marker-alt general tooltipped" id="addInfoPoint" data-position="right" data-tooltip="Add point" v-on:click="startPointCapture('infoPoint')"></i>
                     <br />
                     <i class="fas fa-map-marker-alt threat tooltipped" id="addThreatPoint" data-position="right" data-tooltip="Add threat"></i>
                     <i class="fas fa-road threat tooltipped" id="addOpforRoute" data-position="right" data-tooltip="Add OPFOR route"></i>
@@ -196,6 +196,7 @@
                 <div class="editor editor-basemap animate__animated animate__slideInLeft">
                     <i class="fas fa-map general tooltipped" id="changeBaseMap" data-position="right" data-tooltip="Toggle basemap" v-on:click="changeMapStyle()"></i>
                 </div>
+                <p class="drop-point-alert animate__animated animate__fadeIn">Drop point</p>
             </div>
         </div>
 
