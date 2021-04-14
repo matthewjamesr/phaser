@@ -63,6 +63,10 @@ p {
     font-size: 14pt;
 }
 
+.material-tooltip {
+    margin-left: 10px;
+}
+
 /* Map Related */
 
 .map {
@@ -141,6 +145,18 @@ p {
 
 .map .editor .emission {
     color: #00e676;
+}
+
+.map .editor-pane {
+    z-index: 2;
+    position: absolute;
+    left: 80px;
+    top: 15px;
+    padding: 20px 15px 10px 15px;
+    background: #212121;
+    color: #fff;
+    border-radius: 10px;
+    opacity: 0.85;
 }
 
 /* Everything Else */
