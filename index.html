@@ -39,7 +39,10 @@
         <div class="row nav"> 
             <nav>
                 <div class="nav-wrapper deep-purple darken-2" style="z-index: +50;">
-                    <a href="#!" class="brand-logo center" v-on:click="resetUI()">Phaser</a>
+                    <a href="#!" class="brand-logo center" v-on:click="resetUI()">
+                        <i class="fas fa-fighter-jet right"></i>
+                        <span class="left">Phaser</span>
+                    </a>
                     <ul id="nav-mobile" class="right hide-on-med-and-down">
                         <li><a href="#">Intro</a></li>
                         <li><a href="#">Status</a></li>
@@ -52,7 +55,7 @@
             <div class="col s12 m4 l3 pane" style="height: 100%">
                 <div class="row" style="height: 100%;">
                     <div class="col s12" style="height: 100%; overflow: auto;">
-                        <h2>Phaser</h2>
+                        <h2>Phaser <i class="fas fa-fighter-jet"></i></h2>
                         <p>Generate red threat data for training missions, brought to you by 14 WPS/WSI.</p>
                         <p v-if="status.phases.length == 0">Get started by launching a new phase, or importing a saved state.</p>
                         <div class="center-align">

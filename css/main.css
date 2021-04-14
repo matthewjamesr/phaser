@@ -65,6 +65,7 @@ p {
 
 .material-tooltip {
     margin-left: 10px;
+    border-radius: 10px;
 }
 
 /* Map Related */
