@@ -55,7 +55,7 @@ p {
     width: 25px;
     background: #5e35b1;
     color: #fff;
-    writing-mode: sideways-lr;
+    writing-mode: vertical-lr;
     text-orientation: mixed;
     text-align: center;
     line-height: 25px;
