@@ -175,7 +175,7 @@ p {
     position: absolute;
     top: 15px;
     right: 15px;
-    padding: 10px 15px 10px 15px;
+    padding: 10px 15px 5px 15px;
     border: 3px solid #212121;
     border-radius: 10px;
     cursor: pointer;
