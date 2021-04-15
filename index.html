@@ -197,6 +197,10 @@
                     <i class="fas fa-map general tooltipped" id="changeBaseMap" data-position="right" data-tooltip="Toggle basemap" v-on:click="changeMapStyle()"></i>
                 </div>
                 <p class="drop-point-alert animate__animated animate__fadeIn">Drop point</p>
+                <div class="editor-north-indicator animate__animated animate__fadeIn" v-on:click="resetNorth">
+                    <p>N</p>
+                    <img src="img/north-indicator.png"></img>
+                </div>
             </div>
         </div>
 

@@ -169,6 +169,31 @@ p {
     top: 210px;
 }
 
+.map .editor-north-indicator {
+    display: none;
+    z-index: 2;
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    border-radius: 10px;
+    opacity: 0.85;
+}
+
+.map .editor-north-indicator img {
+    width: 30px;
+}
+
+.map .editor-north-indicator p {
+    position: relative;
+    text-align: center;
+    margin: 0px 0px 5px 0px;
+    font-size: 20pt;
+    font-weight: 800;
+    color: #fff;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: black;
+}
+
 .map .editor-pane {
     z-index: 2;
     position: absolute;

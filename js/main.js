@@ -131,6 +131,10 @@ var app = new Vue({
                 self.mouse_coordinates.lng = e.lngLat.lng
                 self.mouse_coordinates.lat = e.lngLat.lat
             })
+
+            self.map.on('rotate', function () {
+                $('.editor-north-indicator img').css('transform', `rotate(${self.map.getBearing()}deg)`)
+            })
         },
         changeMapStyle: function () {
             if (this.mapStyle === 'streets-v11') {
@@ -154,6 +158,13 @@ var app = new Vue({
                     $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
                     $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
                 }, 1000)
+            })
+        },
+        resetNorth: function () {
+            this.map.easeTo({
+                bearing: 0,
+                duration: 500,
+                easing: x => x
             })
         },
         addData: function (type) {
@@ -250,6 +261,7 @@ var app = new Vue({
             $('.activeMission').hide()
             $(".map .editor").show()
             $(".coordinates").show()
+            $('.map .editor-north-indicator').show()
             $('.activeMission', e.target.offsetParent).show()
         },
         unlockMap: function () {
@@ -264,6 +276,7 @@ var app = new Vue({
             $(".map .lock #step1").css("text-decoration", "none")
             $(".map .lock #step1").css("color", "#fff")
             $(".map .editor").hide()
+            $('.map .editor-north-indicator').hide()
             $(".coordinates").hide()
             $(".map .lock").show()
             $('.activeMission').hide()
