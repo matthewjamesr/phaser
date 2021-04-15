@@ -22,8 +22,18 @@ function Mission(name, date, onStation, ior, mpcChief, range) {
     this.range = range
 }
 
-function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
+function Information(mission, name, details, location, date) {
     this.uuid = uuid.v4()
+    this.mission = mission
+    this.name = name
+    this.details = details
+    this.location = location
+    this.date = date
+}
+
+function Threat(mission, OB, phaseId, name, location, dateStart, dateEnd, persist) {
+    this.uuid = uuid.v4()
+    this.mission = mission
     this.OB = OB
     this.phaseId = phaseId
     this.name = name
@@ -33,10 +43,12 @@ function Threat(OB, phaseId, name, location, dateStart, dateEnd, persist) {
     this.persist = persist
 }
 
-function Emission(threatId, type, majorAxisMeters, minorAxisMeters, ellipseAngle, name, details, emitDTG) {
+function Emission(mission, threatId, type, location, majorAxisMeters, minorAxisMeters, ellipseAngle, name, details, emitDTG) {
     this.uuid = uuid.v4()
+    this.mission = mission
     this.threatId = threatId
     this.type = type
+    this.location = location
     this.majorAxisMeters = majorAxisMeters
     this.minorAxisMeters = minorAxisMeters
     this.ellipseAngle = ellipseAngle
@@ -149,7 +161,7 @@ var app = new Vue({
             $('.map .drop-point-alert').show()
             this.map.getCanvas().style.cursor = 'crosshair';
             var self = this
-            this.map.on('click', function(e) {
+            this.map.once('click', function(e) {
                 $('.map .drop-point-alert').removeClass('animate__animated animate__fadeIn')
                 $('.map .drop-point-alert').addClass('animate__animated animate__fadeOut')
                 self.map.getCanvas().style.cursor = 'grab';
@@ -158,6 +170,10 @@ var app = new Vue({
                     $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
                     $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
                 }, 1000)
+                
+                if (type === 'infoPoint') {
+                    console.log(new Information(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Test Info', 'A basic point ingest test', e.lngLat, new Date()))
+                }
             })
         },
         resetNorth: function () {

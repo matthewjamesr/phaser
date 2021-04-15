@@ -132,7 +132,7 @@ p {
     display: none;
     z-index: 2;
     position: relative;
-    padding: 25px 15px 25px 15px;
+    padding: 20px 15px 20px 15px;
     width: 200px;
     margin: 15px auto;
     background: #212121;
@@ -141,7 +141,7 @@ p {
     opacity: 0.85;
     text-align: center;
     font-weight: 600;
-    font-size: 18pt;
+    font-size: 14pt;
 }
 
 .map .editor i {
@@ -173,21 +173,28 @@ p {
     display: none;
     z-index: 2;
     position: absolute;
-    top: 30px;
-    right: 30px;
+    top: 15px;
+    right: 15px;
+    padding: 10px 15px 10px 15px;
+    border: 3px solid #212121;
     border-radius: 10px;
-    opacity: 0.85;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 .map .editor-north-indicator img {
-    width: 30px;
+    width: 25px;
 }
 
 .map .editor-north-indicator p {
     position: relative;
     text-align: center;
     margin: 0px 0px 5px 0px;
-    font-size: 20pt;
+    font-size: 18pt;
     font-weight: 800;
     color: #fff;
     -webkit-text-stroke-width: 2px;
