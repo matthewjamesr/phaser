@@ -165,6 +165,26 @@ var app = new Vue({
                         'sky-atmosphere-sun-intensity': 15
                     }
                 })
+                self.map.addSource('informationPoints', {
+                    'type': 'geojson',
+                    'data': self.informationCollection
+                })
+                self.map.addLayer({
+                    'id': 'points',
+                    'type': 'symbol',
+                    'source': 'informationPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.redrawMap()
             })
 
             self.map.on('click', function(e) {
