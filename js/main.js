@@ -312,6 +312,10 @@ var app = new Vue({
                     self.status.phases.push(phase)
                     dbAdd("phases", phase)
                 })
+                data.information.forEach(function (info) {
+                    self.status.information.push(info)
+                    dbAdd("phases", info)
+                })
                 this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
             }
