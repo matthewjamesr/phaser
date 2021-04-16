@@ -9,6 +9,7 @@ export function dbInit() {
         console.log("Database already present")
         let data = {}
         data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
         return data
@@ -20,6 +21,7 @@ export function dbReset() {
     db = new localStorageDB("phaser", localStorage);
 
     db.createTable("phases", ["uuid", "name", "lead", "dateStart", "dateEnd", "missions"])
+    db.createTable("information", ["uuid", "mission", "name", "details", "location", "date"])
     db.createTable("threats", ["uuid", "OB", "phaseId", "name", "location", "dateStart", "dateEnd", "persist"])
     db.createTable("emissions", ["uuid", "threatId", "type", "majorAxisMeters", "minorAxisMeters", "ellipseAngle", "name", "details", "emitDTG"])
 
@@ -55,6 +57,7 @@ export function dbAdd(type, data, selectedUUID) {
 
         data = {}
         data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
         console.log(`Inserting mission record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
@@ -64,6 +67,7 @@ export function dbAdd(type, data, selectedUUID) {
         db.commit()
         data = {}
         data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
         console.log(`Inserting record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
@@ -85,6 +89,7 @@ export function dbDel(type, uuid, missionUUID) {
         })
         let data = {}
         data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
         console.log(`Removed mission record from table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
@@ -94,6 +99,7 @@ export function dbDel(type, uuid, missionUUID) {
         db.commit()
         let data = {}
         data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
         console.log(`Removed record from table ${type.toUpperCase()}\n${JSON.stringify(data)}`)

@@ -97,8 +97,14 @@ var app = new Vue({
             lng: 0,
             lat: 0
         },
+        plotType: '',
+        informationCollection: turf.featureCollection([]),
+        threatsCollection: turf.featureCollection([]),
+        emissionsCollection: turf.featureCollection([]),
+        allowPlot: false,
         status: {
             phases: [],
+            information: [],
             threats: [],
             emissions: []
         },
@@ -120,6 +126,28 @@ var app = new Vue({
                 zoom: 10 // starting zoom
             })
 
+            self.map.on('load', function () {
+                self.map.addSource('informationPoints', {
+                    'type': 'geojson',
+                    'data': self.informationCollection
+                })
+                self.map.addLayer({
+                    'id': 'points',
+                    'type': 'symbol',
+                    'source': 'informationPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+            })
+
             self.map.on('styledata', function () {
                 self.map.addSource('mapbox-dem', {
                     'type': 'raster-dem',
@@ -139,6 +167,26 @@ var app = new Vue({
                 })
             })
 
+            self.map.on('click', function(e) {
+                if (self.allowPlot) {
+                    $('.map .drop-point-alert').removeClass('animate__animated animate__fadeIn')
+                    $('.map .drop-point-alert').addClass('animate__animated animate__fadeOut')
+                    self.map.getCanvas().style.cursor = 'grab';
+                    setTimeout(function () {
+                        $('.map .drop-point-alert').hide()
+                        $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
+                        $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
+                    }, 1000)
+                    
+                    if (self.plotType === 'infoPoint') {
+                        self.addData('information', e.lngLat)
+                        self.redrawMap()
+                    }
+
+                    self.allowPlot = false
+                }
+            })
+
             self.map.on('mousemove', function(e) {
                 self.mouse_coordinates.lng = e.lngLat.lng
                 self.mouse_coordinates.lat = e.lngLat.lat
@@ -146,6 +194,17 @@ var app = new Vue({
 
             self.map.on('rotate', function () {
                 $('.editor-north-indicator img').css('transform', `rotate(${self.map.getBearing()}deg)`)
+            })
+        },
+        redrawMap: function () {
+            this.informationCollection = turf.featureCollection([])
+            var self = this
+            self.status.information.forEach(function (info) {
+                if (info.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                    var new_point = turf.point([info.location.lng, info.location.lat], { id: info.uuid, type: 'information', added: info.date, title: info.name, icon: 'monument', lng: info.location.lng, lat: info.location.lat, description: info.details})
+                    self.informationCollection.features.push(new_point)
+                }
+                self.map.getSource('informationPoints').setData(self.informationCollection)
             })
         },
         changeMapStyle: function () {
@@ -159,22 +218,9 @@ var app = new Vue({
         },
         startPointCapture: function (type) {
             $('.map .drop-point-alert').show()
-            this.map.getCanvas().style.cursor = 'crosshair';
-            var self = this
-            this.map.once('click', function(e) {
-                $('.map .drop-point-alert').removeClass('animate__animated animate__fadeIn')
-                $('.map .drop-point-alert').addClass('animate__animated animate__fadeOut')
-                self.map.getCanvas().style.cursor = 'grab';
-                setTimeout(function () {
-                    $('.map .drop-point-alert').hide()
-                    $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
-                    $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
-                }, 1000)
-                
-                if (type === 'infoPoint') {
-                    console.log(new Information(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Test Info', 'A basic point ingest test', e.lngLat, new Date()))
-                }
-            })
+            this.map.getCanvas().style.cursor = 'crosshair'
+            this.plotType = type
+            this.allowPlot = true
         },
         resetNorth: function () {
             this.map.easeTo({
@@ -183,7 +229,7 @@ var app = new Vue({
                 easing: x => x
             })
         },
-        addData: function (type) {
+        addData: function (type, location) {
             var self = this
             $('#phaseModal').modal('close')
             if (type === "phase") {
@@ -196,6 +242,11 @@ var app = new Vue({
                 let data = new Mission(self.addDataForm.missionName, $('#missionDate').val(), $('#missionTime').val(), self.addDataForm.missionIOR, self.addDataForm.missionMpcChief, self.addDataForm.missionRange)
                 self.status = exports.dbAdd("missions", data, self.selectedMissionUID)
                 self.unlockMap()
+            }
+
+            if (type === "information") {
+                let data = new Information(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Test Info', 'A basic point ingest test', location, new Date())
+                self.status = dbAdd("information", data)
             }
 
             if (type === "threat") {
@@ -253,6 +304,8 @@ var app = new Vue({
             this.status.phases = []
             this.status.threats = []
             this.status.emissions = []
+            this.informationCollection = turf.featureCollection([])
+            this.map.getSource('informationPoints').setData(this.informationCollection)
         },
         enterPhaseBuilder: function (phase) {
             if (phase != null) {
@@ -279,6 +332,7 @@ var app = new Vue({
             $(".coordinates").show()
             $('.map .editor-north-indicator').show()
             $('.activeMission', e.target.offsetParent).show()
+            this.redrawMap()
         },
         unlockMap: function () {
             $(".map .lock").hide()
@@ -296,6 +350,8 @@ var app = new Vue({
             $(".coordinates").hide()
             $(".map .lock").show()
             $('.activeMission').hide()
+            this.informationCollection = turf.featureCollection([])
+            this.map.getSource('informationPoints').setData(this.informationCollection)
         }
     },
     mounted: function () {

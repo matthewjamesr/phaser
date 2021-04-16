@@ -71,9 +71,16 @@ p {
 /* Map Related */
 
 .map {
+    position: relative;
     z-index: 0;
     margin: 0px;
     padding: 0px !important;
+    height: 100%;
+}
+
+.map #map {
+    position: absolute;
+    width: 100%;
     height: 100%;
 }
 
@@ -230,6 +237,7 @@ p {
 }
 
 .pane {
+    z-index: +100;
     width: 100%;
     padding: 10px 15px 10px 15px;
     
