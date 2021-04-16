@@ -302,6 +302,7 @@ var app = new Vue({
         clearData: function () {
             dbReset()
             this.status.phases = []
+            this.status.information = []
             this.status.threats = []
             this.status.emissions = []
             this.informationCollection = turf.featureCollection([])
