@@ -418,7 +418,6 @@ var app = new Vue({
                 $('.tooltipped').tooltip()
                 $('.dropdown-trigger').dropdown()
                 $('select').formSelect()
-                console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
                 self.changeCoordinateSystem()
                 setTimeout(function () {

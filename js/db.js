@@ -4,14 +4,20 @@ let db = new localStorageDB("phaser", localStorage);
 export function dbInit() {
     if( db.isNew() ) {
         dbReset()
-        console.log("Initialized new empty database")        
-    } else {
-        console.log("Database already present")
         let data = {}
         data.phases = db.queryAll("phases")
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        console.log("Initialized new empty database\n\n"+JSON.stringify(data))
+        return data
+    } else {
+        let data = {}
+        data.phases = db.queryAll("phases")
+        data.information = db.queryAll("information")
+        data.threats = db.queryAll("threats")
+        data.emissions = db.queryAll("emissions")
+        console.log("Database already present\n\n"+JSON.stringify(data))
         return data
     }
 }
