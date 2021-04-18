@@ -314,7 +314,7 @@ var app = new Vue({
                 })
                 data.information.forEach(function (info) {
                     self.status.information.push(info)
-                    dbAdd("phases", info)
+                    dbAdd("information", info)
                 })
                 this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
@@ -383,13 +383,13 @@ var app = new Vue({
         this.$nextTick(()=>{
             var self = this
             $(document).ready(function(){
+                self.status = dbInit()
                 $('.modal').modal()
                 $('.datepicker').datepicker()
                 $('.timepicker').timepicker()
                 $('.tooltipped').tooltip()
                 $('.dropdown-trigger').dropdown()
                 $('select').formSelect()
-                self.status = dbInit()
                 console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
                 setTimeout(function () {
