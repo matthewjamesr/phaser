@@ -1,3 +1,4 @@
+import * as mgrs from "mgrs"
 import * as uuid from "uuid"
 import * as exports from './db.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
@@ -94,8 +95,11 @@ var app = new Vue({
         map: map,
         mapStyle: 'streets-v11',
         mouse_coordinates: {
+            coordinateSystem: 'lnglat',
             lng: 0,
-            lat: 0
+            lat: 0,
+            mgrs: '',
+            html: 'hi'
         },
         plotType: '',
         informationCollection: turf.featureCollection([]),
@@ -210,6 +214,8 @@ var app = new Vue({
             self.map.on('mousemove', function(e) {
                 self.mouse_coordinates.lng = e.lngLat.lng
                 self.mouse_coordinates.lat = e.lngLat.lat
+                self.mouse_coordinates.mgrs = mgrs.forward([e.lngLat.lng, e.lngLat.lat])
+                self.changeCoordinateSystem()
             })
 
             self.map.on('rotate', function () {
@@ -354,7 +360,7 @@ var app = new Vue({
             this.activeMissionIndex = missionIndex
             $('.activeMission').hide()
             $(".map .editor").show()
-            $(".coordinates").show()
+            $(".coordinates#lnglat").show()
             $('.map .editor-north-indicator').show()
             $('.activeMission', e.target.offsetParent).show()
             this.redrawMap()
@@ -377,6 +383,24 @@ var app = new Vue({
             $('.activeMission').hide()
             this.informationCollection = turf.featureCollection([])
             this.map.getSource('informationPoints').setData(this.informationCollection)
+        },
+        changeCoordinateSystem: function (change) {
+            if (change === 'true') {
+                if (this.mouse_coordinates.coordinateSystem === 'lnglat') {
+                    this.mouse_coordinates.coordinateSystem = 'MGRS'
+                } else if (this.mouse_coordinates.coordinateSystem === 'MGRS') {
+                    this.mouse_coordinates.coordinateSystem = 'lnglat'
+                }
+            }
+            if (this.mouse_coordinates.coordinateSystem === 'lnglat') {
+                this.mouse_coordinates.html = `<p>Lng: ${this.mouse_coordinates.lng.toFixed(5)}</p><p>Lat: <span class="right">${this.mouse_coordinates.lat.toFixed(5)}</span></p>`
+            }
+            if (this.mouse_coordinates.coordinateSystem === 'MGRS') {
+                this.mouse_coordinates.html = `<p>MGRS: ${this.mouse_coordinates.mgrs}</p>`
+            }
+        },
+        grabMGRS: function () {
+            alert(`MGRS: ${mgrs.forward([this.mouse_coordinates.lng, this.mouse_coordinates.lat])}`)
         }
     },
     mounted: function () {
@@ -392,6 +416,7 @@ var app = new Vue({
                 $('select').formSelect()
                 console.log(`Rewinding previous session, data found: \n\n ${JSON.stringify(self.status)}`)
                 self.initMap()
+                self.changeCoordinateSystem()
                 setTimeout(function () {
                     $('.loading').addClass('animate__animated animate__fadeOut')
                     setTimeout(function () {

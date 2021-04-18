@@ -114,7 +114,11 @@ p {
     color: #fff;
     padding: 10px 15px 10px 15px;
     border-radius: 10px;
-  }
+}
+
+.coordinates #MGRS {
+    display: none;
+}
   
 .coordinates p {
     margin-top: 2px;
