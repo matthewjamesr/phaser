@@ -205,7 +205,7 @@
             </div>
         </div>
 
-        <div class="ui coordinates animate__animated animate__fadeIn" id="lnglat" v-on:click="changeCoordinateSystem('true')" v-on:dblclick="grabLocation()" v-html="mouse_coordinates.html">
+        <div class="ui coordinates animate__animated animate__fadeIn" id="lnglat" v-on:dblclick="changeCoordinateSystem('true')" v-on:click.shift="grabLocation()" v-html="mouse_coordinates.html">
         </div>
     </div>
 

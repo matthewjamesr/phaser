@@ -394,13 +394,17 @@ var app = new Vue({
             }
             if (this.mouse_coordinates.coordinateSystem === 'lnglat') {
                 this.mouse_coordinates.html = `<p>Lng: ${this.mouse_coordinates.lng.toFixed(5)}</p><p>Lat: <span class="right">${this.mouse_coordinates.lat.toFixed(5)}</span></p>`
+                this.mouse_coordinates.html += `<input id="clipboard" style="display: none;" value="${this.mouse_coordinates.lat}, ${this.mouse_coordinates.lng}"></input>`
             }
             if (this.mouse_coordinates.coordinateSystem === 'MGRS') {
                 this.mouse_coordinates.html = `<p>MGRS: ${this.mouse_coordinates.mgrs}</p>`
+                this.mouse_coordinates.html += `<input id="clipboard" style="display: none;" value="${this.mouse_coordinates.mgrs}"></input>`
             }
         },
-        grabMGRS: function () {
-            alert(`MGRS: ${mgrs.forward([this.mouse_coordinates.lng, this.mouse_coordinates.lat])}`)
+        grabLocation: function () {
+            var copyText = document.getElementById("clipboard")
+
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", copyText.value);
         }
     },
     mounted: function () {
