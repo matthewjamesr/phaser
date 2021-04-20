@@ -116,7 +116,10 @@ var app = new Vue({
         editingPhase: 0,
         selectedMissionUID: '',
         activePhaseIndex: 0,
-        activeMissionIndex: 0
+        activeMissionIndex: 0,
+        activeRange: '',
+        bullseyeDistance: 0,
+        bullseyeBearing: 0
     },
     methods: {
         initMap: function () {
@@ -216,6 +219,10 @@ var app = new Vue({
                 self.mouse_coordinates.lat = e.lngLat.lat
                 self.mouse_coordinates.mgrs = mgrs.forward([e.lngLat.lng, e.lngLat.lat])
                 self.changeCoordinateSystem()
+                var bullseye = turf.point([-86.612707,30.448600])
+                var mouse = turf.point([self.mouse_coordinates.lng, self.mouse_coordinates.lat])
+                self.bullseyeDistance = parseFloat(turf.distance(bullseye, mouse, {'units': 'miles'})).toFixed(2)
+                self.bullseyeBearing = turf.bearingToAzimuth(turf.bearing(bullseye, mouse)).toFixed(0)
             })
 
             self.map.on('rotate', function () {
@@ -347,10 +354,6 @@ var app = new Vue({
                 this.editingPhase = this.status.phases[phase]
                 this.activePhaseIndex = phase
                 this.selectedMissionUID = this.status.phases[phase].uuid
-                
-                if (this.status.phases[phase].missions.length > 0) {
-                    this.unlockMap()
-                }
             } else {
                 this.resetUI()
             }
@@ -358,8 +361,11 @@ var app = new Vue({
         },
         selectActiveMission: function (missionIndex, e) {
             this.activeMissionIndex = missionIndex
+            this.activeRange = this.status.phases[this.activePhaseIndex].missions[this.activeMissionIndex].range
+            this.unlockMap()
             $('.activeMission').hide()
             $(".map .editor").show()
+            $(".map .bullseye").show()
             $(".coordinates#lnglat").show()
             $('.map .editor-north-indicator').show()
             $('.activeMission', e.target.offsetParent).show()
@@ -381,6 +387,7 @@ var app = new Vue({
             $(".coordinates").hide()
             $(".map .lock").show()
             $('.activeMission').hide()
+            $(".map .bullseye").hide()
             this.informationCollection = turf.featureCollection([])
             this.map.getSource('informationPoints').setData(this.informationCollection)
         },
@@ -397,7 +404,7 @@ var app = new Vue({
                 this.mouse_coordinates.html += `<input id="clipboard" style="display: none;" value="${this.mouse_coordinates.lat}, ${this.mouse_coordinates.lng}"></input>`
             }
             if (this.mouse_coordinates.coordinateSystem === 'MGRS') {
-                this.mouse_coordinates.html = `<p>MGRS: ${this.mouse_coordinates.mgrs}</p>`
+                this.mouse_coordinates.html = `<p id="MGRS"><span class="left">MGRS: </span> <span class="right">${this.mouse_coordinates.mgrs}</span></p>`
                 this.mouse_coordinates.html += `<input id="clipboard" style="display: none;" value="${this.mouse_coordinates.mgrs}"></input>`
             }
         },
@@ -426,6 +433,22 @@ var app = new Vue({
                         $('.loading').hide()
                     }, 1000)
                 }, 1000)
+            });
+
+            $(document).bind('keypress', function(event) {
+                // Shift + C: Copy current mouse coordinate location
+                if(event.which === 67 && event.shiftKey) {
+                    self.grabLocation()
+                }
+                // Shift + X: Reset map to North
+                if(event.which === 88 && event.shiftKey) {
+                    self.resetNorth()
+                }
+                // Shift + Q: Insert information point at mouse location
+                if(event.which === 81 && event.shiftKey) {
+                    self.addData('information', {lng: self.mouse_coordinates.lng, lat: self.mouse_coordinates.lat})
+                    self.redrawMap()
+                }
             });
         })
     }
