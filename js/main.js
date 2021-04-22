@@ -214,11 +214,10 @@ var app = new Vue({
                         ],
                         'fill-extrusion-opacity': 0.6
                         }
-                        },
+                    },
 
-                        labelLayerId
-                    )
-                })
+                    labelLayerId
+                )
                 self.map.addSource('informationPoints', {
                     'type': 'geojson',
                     'data': self.informationCollection
