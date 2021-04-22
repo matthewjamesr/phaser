@@ -93,7 +93,7 @@ var app = new Vue({
             missionRange: ''
         },
         map: map,
-        mapStyle: 'streets-v11',
+        mapStyle: 'streets-v8',
         mouse_coordinates: {
             coordinateSystem: 'lnglat',
             lng: 0,
