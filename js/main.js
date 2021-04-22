@@ -172,7 +172,7 @@ var app = new Vue({
                         'sky-atmosphere-sun-intensity': 15
                     }
                 })
-                map.addLayer({
+                self.map.addLayer({
                     'id': 'add-3d-buildings',
                     'source': 'composite',
                     'source-layer': 'building',
@@ -205,10 +205,11 @@ var app = new Vue({
                         ],
                         'fill-extrusion-opacity': 0.6
                         }
-                    },
+                        },
 
-                    labelLayerId
-                )
+                        labelLayerId
+                    )
+                })
                 self.map.addSource('informationPoints', {
                     'type': 'geojson',
                     'data': self.informationCollection
