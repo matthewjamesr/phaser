@@ -172,6 +172,15 @@ var app = new Vue({
                         'sky-atmosphere-sun-intensity': 15
                     }
                 })
+                // Insert the layer beneath any symbol layer.
+                var layers = map.getStyle().layers;
+                var labelLayerId;
+                for (var i = 0; i < layers.length; i++) {
+                    if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+                        labelLayerId = layers[i].id;
+                        break;
+                    }
+                }
                 self.map.addLayer({
                     'id': 'add-3d-buildings',
                     'source': 'composite',
