@@ -93,7 +93,7 @@ var app = new Vue({
             missionRange: ''
         },
         map: map,
-        mapStyle: 'streets-v8',
+        mapStyle: 'streets-v11',
         mouse_coordinates: {
             coordinateSystem: 'lnglat',
             lng: 0,
@@ -128,12 +128,57 @@ var app = new Vue({
             mapboxgl.accessToken = 'pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg'
             self.map = new mapboxgl.Map({
                 container: 'map',
-                style: `mapbox://styles/mapbox/${self.mapStyle}`, // stylesheet location
-                center: [-86.70, 30.56], // starting position [lng, lat]
-                zoom: 10 // starting zoom
+                style: `mapbox://styles/mapbox/${self.mapStyle}`,
+                center: [-86.70, 30.56],
+                zoom: 10,
+                antialias: true
             })
 
             self.map.on('load', function () {
+                var layers = self.map.getStyle().layers
+                var labelLayerId
+                for (var i = 0; i < layers.length; i++) {
+                    if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+                        labelLayerId = layers[i].id
+                        break
+                    }
+                }
+                
+                self.map.addLayer(
+                {
+                    'id': 'add-3d-buildings',
+                    'source': 'composite',
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 7,
+                    'paint': {
+                        'fill-extrusion-color': '#aaa',
+                        'fill-extrusion-height': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            0,
+                            7.05,
+                            ['get', 'height']
+                        ],
+                        'fill-extrusion-base': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            0,
+                            7.05,
+                            ['get', 'min_height']
+                        ],
+                        'fill-extrusion-opacity': 0.8
+                    }
+                },
+                
+                labelLayerId
+                )
+
                 self.map.addSource('informationPoints', {
                     'type': 'geojson',
                     'data': self.informationCollection
@@ -191,6 +236,48 @@ var app = new Vue({
                       'text-anchor': 'top'
                     }
                 })
+                var layers = self.map.getStyle().layers
+                var labelLayerId
+                for (var i = 0; i < layers.length; i++) {
+                    if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+                        labelLayerId = layers[i].id
+                        break
+                    }
+                }    
+                self.map.addLayer(
+                {
+                    'id': 'add-3d-buildings',
+                    'source': 'composite',
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 7,
+                    'paint': {
+                        'fill-extrusion-color': '#aaa',
+                        'fill-extrusion-height': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            0,
+                            7.05,
+                            ['get', 'height']
+                        ],
+                        'fill-extrusion-base': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            7,
+                            0,
+                            7.05,
+                            ['get', 'min_height']
+                        ],
+                        'fill-extrusion-opacity': 0.6
+                    }
+                },
+                
+                labelLayerId
+                )
                 self.redrawMap()
             })
 
