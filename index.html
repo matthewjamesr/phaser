@@ -129,7 +129,7 @@
                                     <div v-on:click="e => selectActiveMission(index, e)">
                                         <h4 class="left">{{mission.name}} <small>{{mission.date}} - {{mission.onStation}}</small></h4>
                                         <pre style="font-size: 8pt; clear: left;">{{mission.uuid}}</pre>
-                                        <p style="clear: left;"><b>IOR:</b> {{mission.ior}} <b style="margin-left:10px;">MPC Chief:</b> {{mission.mpcChief}} <b style="margin-left:10px;">Range:</b> {{mission.range}}</p>
+                                        <p style="clear: left;"><b>IOR:</b> {{mission.ior}} <b style="margin-left:10px;">MPC Chief:</b> {{mission.mpcChief}} <b style="margin-left:10px;">Bullseye:</b> {{mission.range}}</p>
                                     </div>
                                 </div>
                             </div>
@@ -148,11 +148,10 @@
                             <div class="input-field col s6">
                                 <select v-model="addDataForm.missionRange">
                                     <option value="" disabled selected>Choose your option</option>
-                                    <option value="Pilsung">Pilsung</option>
-                                    <option value="Harrumph">Harrumph</option>
-                                    <option value="Voodoo">Voodoo</option>
+                                    <option value="Crestview">Crestview</option>
+                                    <option value="Elvis">Elvis</option>
                                 </select>
-                                <label>Range</label>
+                                <label>Bullseye</label>
                             </div>
                             <div class="input-field col s6">
                                 <input type="text" class="validate" v-model="addDataForm.missionIOR" />

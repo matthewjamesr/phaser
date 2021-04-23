@@ -119,7 +119,8 @@ var app = new Vue({
         activeMissionIndex: 0,
         activeRange: '',
         bullseyeDistance: 0,
-        bullseyeBearing: 0
+        bullseyeBearing: 0,
+        centerMapTo: []
     },
     methods: {
         initMap: function () {
@@ -306,7 +307,16 @@ var app = new Vue({
                 self.mouse_coordinates.lat = e.lngLat.lat
                 self.mouse_coordinates.mgrs = mgrs.forward([e.lngLat.lng, e.lngLat.lat])
                 self.changeCoordinateSystem()
-                var bullseye = turf.point([-86.612707,30.448600])
+                
+                let bullseye
+                if (self.activeRange === 'Crestview') {
+                    bullseye = turf.point(mgrs.toPoint('16REV3068610382'))
+                    self.centerMapTo = mgrs.toPoint('16REV3068610382')
+                }
+                if (self.activeRange === 'Elvis') {
+                    bullseye = turf.point(mgrs.toPoint('11SPB1085723338'))
+                    self.centerMapTo = mgrs.toPoint('16REV3068610382')
+                }
                 var mouse = turf.point([self.mouse_coordinates.lng, self.mouse_coordinates.lat])
                 self.bullseyeDistance = parseFloat(turf.distance(bullseye, mouse, {'units': 'miles'})).toFixed(2)
                 self.bullseyeBearing = turf.bearingToAzimuth(turf.bearing(bullseye, mouse)).toFixed(0)

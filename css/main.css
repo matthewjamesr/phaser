@@ -140,7 +140,7 @@ p {
     background: #212121;
     color: #fff;
     border-radius: 10px;
-    opacity: 0.85;
+    opacity: 0.85 !important;
 }
 
 .map .drop-point-alert {
@@ -239,7 +239,7 @@ p {
     background: #212121;
     color: #fff;
     border-radius: 10px;
-    opacity: 0.85;
+    opacity: 0.85 !important;
     cursor: pointer;
     -webkit-user-select: none;
     -khtml-user-select: none;
