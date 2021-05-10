@@ -81,6 +81,35 @@ export function dbAdd(type, data, selectedUUID) {
     }
 }
 
+export function dbPointGet(type, uuid) {
+    let data = {}
+    if (type === "information") {
+        data = db.queryAll("information", {
+            query: {uuid: uuid}
+        })
+    }
+
+    return data
+}
+
+export function dbPointUpdate(type, uuid, name, details, lng, lat) {
+    let data = {}
+    if (type === "information") {
+        data = db.update("information", {uuid: uuid}, function(row) {
+            row.name = name
+            row.details = details
+            row.location.lng = lng
+            row.location.lat = lat
+
+            return row
+        })
+
+        db.commit()
+    }
+
+    return db.queryAll("information")
+}
+
 export function dbDel(type, uuid, missionUUID) {
     if (type === "missions") {
         db.update("phases", {uuid: uuid}, function (row) {

@@ -1,5 +1,6 @@
 import * as mgrs from "mgrs"
 import * as uuid from "uuid"
+import Editor from "@toast-ui/editor"
 import * as exports from './db.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
@@ -114,6 +115,11 @@ var app = new Vue({
         },
         importState: '',
         editingPhase: 0,
+        editor: {},
+        editingPoint: {},
+        editingLat: 0,
+        editingLng: 0,
+        editingMGRS: '',
         selectedMissionUID: '',
         activePhaseIndex: 0,
         activeMissionIndex: 0,
@@ -302,6 +308,25 @@ var app = new Vue({
                 }
             })
 
+            self.map.on('click', 'points', function(e) {        
+                self.editingPoint = dbPointGet('information', e.features[0].properties.id)[0]
+                $('.input-field label').addClass('active');
+                setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
+                self.editor.setHtml(self.editingPoint.details, false)
+                self.editor.setMarkdown(self.editingPoint.details, false)
+                $('#informationModal').modal('open')
+                self.editingLat = self.editingPoint.location.lat
+                self.editingLng = self.editingPoint.location.lng
+            })
+
+            self.map.on('mouseenter', 'points', function() {
+                self.map.getCanvas().style.cursor = 'pointer'
+            })
+            // Change it back to a pointer when it leaves.
+            app.map.on('mouseleave', 'points', function() {
+                self.map.getCanvas().style.cursor = 'grab'
+            })
+
             self.map.on('mousemove', function(e) {
                 self.mouse_coordinates.lng = e.lngLat.lng
                 self.mouse_coordinates.lat = e.lngLat.lat
@@ -375,8 +400,13 @@ var app = new Vue({
             }
 
             if (type === "information") {
-                let data = new Information(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Test Info', 'A basic point ingest test', location, new Date())
+                let data = new Information(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Pending', 'More details about this point.', location, new Date())
+                self.editingPoint = data
+                self.editingLng = location.lng
+                self.editingLat = location.lat
                 self.status = dbAdd("information", data)
+                $('#informationModal').modal('open')
+                this.redrawMap()
             }
 
             if (type === "threat") {
@@ -402,9 +432,18 @@ var app = new Vue({
                         $(".map .lock").show()
                     }
                 })
+            } else if (type === "information") {
+                this.redrawMap()
+                $('#informationModal').modal('close')
             } else {
                 this.resetUI()
             }
+        },
+        updatePoint: function (type, uuid) {
+            $('#informationModal').modal('close')
+            this.status.information = exports.dbPointUpdate(type, uuid, this.editingPoint.name, this.editor.getHtml(), this.editingLng, this.editingLat)
+            console.log(JSON.stringify(this.status.information))
+            this.redrawMap()
         },
         exportData: function () {
             var blob = new Blob([JSON.stringify(this.status, null, 2)], {type: "text/json;charset=utf-8"})
@@ -530,6 +569,14 @@ var app = new Vue({
                         $('.loading').hide()
                     }, 1000)
                 }, 1000)
+
+                self.editor = new Editor({
+                    el: document.querySelector('#md-editor'),
+                    previewStyle: 'vertical',
+                    height: '280px',
+                    initialValue: self.editingPoint.details,
+                    initialEditType: 'wysiwyg'
+                })
             });
 
             $(document).bind('keypress', function(event) {

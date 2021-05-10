@@ -9,6 +9,12 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
     <link type="text/css" rel="stylesheet" href="css/main.css"  media="screen,projection"/>
     <link type="text/css" rel="stylesheet" href="css/depends/animate.min.css"  media="screen,projection"/>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.48.4/codemirror.min.css"
+    />
+    <!-- Editor's Style -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -205,6 +211,35 @@
                     <p><b>Bullseye:</b> {{activeRange}}</p>
                     <p>{{bullseyeDistance}} mi<span>@ {{bullseyeBearing}}</span>&#730;</p>
                 </div>
+
+                <div id="informationModal" class="modal">
+                    <div class="modal-content left-align">
+                        <h2>Information: {{ editingPoint.name }} <i class="far fa-trash-alt red-text" style="cursor: pointer;" v-on:click="delData('information', editingPoint.uuid)"></i></i></h2>
+                        <p>UUID: {{ editingPoint.uuid }}</p>
+                        <div class="row">
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="editingPoint.name" />
+                                <label class="active">Name</label>
+                            </div>
+                            <div class="input-field col s3">
+                                <input type="text" class="validate" v-model="editingLat" />
+                                <label class="active">Lat</label>
+                            </div>
+                            <div class="input-field col s3">
+                                <input type="text" class="validate" v-model="editingLng" />
+                                <label class="active">Lng</label>
+                            </div>
+                            <div class="input-field col s12">
+                                <input type="text" class="datepicker" id="dateStart" v-model="editingPoint.date" />
+                                <label class="active">Created</label>
+                            </div>
+                            <div class="col s12" id="md-editor"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="updatePoint('information', editingPoint.uuid)">Update</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -219,12 +254,18 @@
     Edit URL: https://generator.jspm.io/#U2VgYGBkDM0rySzJSU1hKC3NTHGw0DPWMwIASG5aoxkA
     -->
     <script type="importmap">
-    {
-        "imports": {
-            "mgrs": "https://ga.jspm.io/npm:mgrs@1.0.0/dist/mgrs.js",
-            "uuid": "https://ga.jspm.io/npm:uuid@8.3.2/dist/esm-browser/index.js"
+        {
+            "imports": {
+              "@toast-ui/editor": "https://ga.jspm.io/npm:@toast-ui/editor@2.5.2/dist/toastui-editor.js",
+              "mgrs": "https://ga.jspm.io/npm:mgrs@1.0.0/dist/mgrs.js",
+              "uuid": "https://ga.jspm.io/npm:uuid@8.3.2/dist/esm-browser/index.js"
+            },
+            "scopes": {
+              "https://ga.jspm.io/": {
+                "codemirror": "https://ga.jspm.io/npm:codemirror@5.60.0/lib/codemirror.js"
+              }
+            }
         }
-    }
     </script>
     
     <script type="text/javascript" src="js/depends/jquery-3.6.0.min.js"></script>
