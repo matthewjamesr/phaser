@@ -313,7 +313,6 @@ var app = new Vue({
                 $('.input-field label').addClass('active');
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
                 self.editor.setHtml(self.editingPoint.details, false)
-                self.editor.setMarkdown(self.editingPoint.details, false)
                 $('#informationModal').modal('open')
                 self.editingLat = self.editingPoint.location.lat
                 self.editingLng = self.editingPoint.location.lng
@@ -574,7 +573,6 @@ var app = new Vue({
                     el: document.querySelector('#md-editor'),
                     previewStyle: 'vertical',
                     height: '280px',
-                    initialValue: self.editingPoint.details,
                     initialEditType: 'wysiwyg'
                 })
             });
