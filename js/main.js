@@ -100,6 +100,7 @@ var app = new Vue({
             lng: 0,
             lat: 0,
             mgrs: '',
+            elevation: 'Click map',
             html: 'hi'
         },
         plotType: '',
@@ -306,6 +307,8 @@ var app = new Vue({
 
                     self.allowPlot = false
                 }
+
+                self.getElevation(self.mouse_coordinates.lng, self.mouse_coordinates.lat)
             })
 
             self.map.on('click', 'points', function(e) {        
@@ -348,6 +351,22 @@ var app = new Vue({
 
             self.map.on('rotate', function () {
                 $('.editor-north-indicator img').css('transform', `rotate(${self.map.getBearing()}deg)`)
+            })
+        },
+        getElevation: function (lng, lat) {
+            var self = this
+            var query = 'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/' + lng + ',' + lat + '.json?layers=contour&limit=50&access_token=pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg';
+            $.ajax({
+                method: 'GET',
+                url: query,
+            }).done(function(data) {
+                var allFeatures = data.features
+                var elevations = []
+                for (var i = 0; i < allFeatures.length; i++) {
+                    elevations.push(allFeatures[i].properties.ele)
+                }
+                var elevation = Math.max(...elevations)
+                self.mouse_coordinates.elevation = elevation
             })
         },
         redrawMap: function () {
@@ -535,7 +554,8 @@ var app = new Vue({
                 }
             }
             if (this.mouse_coordinates.coordinateSystem === 'lnglat') {
-                this.mouse_coordinates.html = `<p>Lng: ${this.mouse_coordinates.lng.toFixed(5)}</p><p>Lat: <span class="right">${this.mouse_coordinates.lat.toFixed(5)}</span></p>`
+                this.mouse_coordinates.html = `<p>Lng: <span class="right">${this.mouse_coordinates.lng.toFixed(5)}</span></p><p>Lat: <span class="right">${this.mouse_coordinates.lat.toFixed(5)}</span></p>`
+                this.mouse_coordinates.html += `<p>Elevation (m): ${this.mouse_coordinates.elevation}`
                 this.mouse_coordinates.html += `<input id="clipboard" style="display: none;" value="${this.mouse_coordinates.lat}, ${this.mouse_coordinates.lng}"></input>`
             }
             if (this.mouse_coordinates.coordinateSystem === 'MGRS') {
