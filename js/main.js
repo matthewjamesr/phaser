@@ -45,13 +45,11 @@ function Threat(mission, OB, phaseId, name, location, dateStart, dateEnd, persis
     this.persist = persist
 }
 
-function Route(mission, OB, name, startCoord, endCoord, detailTurnByTurn, details, date) {
+function Route(mission, OB, name, coordinates, detailTurnByTurn, details, date) {
     this.uuid = uuid.v4()
     this.mission = mission
-    this.OB = OB
     this.name = name
-    this.startCoord = startCoord
-    this.endCoord = endCoord
+    this.coordinates = coordinates
     this.detailTurnByTurn = detailTurnByTurn
     this.details = details
     this.date = date
@@ -106,6 +104,7 @@ var app = new Vue({
             missionRange: ''
         },
         map: map,
+        mapApiKey: 'pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg',
         mapStyle: 'streets-v11',
         mouse_coordinates: {
             coordinateSystem: 'lnglat',
@@ -127,7 +126,8 @@ var app = new Vue({
             phases: [],
             information: [],
             threats: [],
-            emissions: []
+            emissions: [],
+            routes: []
         },
         importState: '',
         editingPhase: 0,
@@ -149,7 +149,7 @@ var app = new Vue({
         initMap: function () {
             var self = this
       
-            mapboxgl.accessToken = 'pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg'
+            mapboxgl.accessToken = self.mapApiKey
             self.map = new mapboxgl.Map({
                 container: 'map',
                 style: `mapbox://styles/mapbox/${self.mapStyle}`,
@@ -420,7 +420,7 @@ var app = new Vue({
         },
         getElevation: function (lng, lat) {
             var self = this
-            var query = 'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/' + lng + ',' + lat + '.json?layers=contour&limit=50&access_token=pk.eyJ1IjoibWF0dGhld2phbWVzIiwiYSI6Ik5hWHoxc2sifQ.VDda6nb8doJs-wC82yslSg';
+            var query = 'https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/' + lng + ',' + lat + '.json?layers=contour&limit=50&access_token=' + self.mapApiKey;
             $.ajax({
                 method: 'GET',
                 url: query,
@@ -477,7 +477,19 @@ var app = new Vue({
             }
         },
         finalizeRoute: function () {
+            let formattedCoords = '';
+            var coordinates = this.editingRouteCoords
             this.editingRouteCoords = []
+
+            var self = this
+            coordinates.forEach(function (coordinate, index) {
+                if (index < coordinates.length-1) {
+                    formattedCoords += `${coordinate.lng},${coordinate.lat};`
+                } else {
+                    formattedCoords += `${coordinate.lng},${coordinate.lat}`
+                    self.getRouteMatch(formattedCoords)
+                }
+            })
 
             $('.map .drop-point-alert-route').removeClass('animate__animated animate__fadeIn')
             $('.map .drop-point-alert-route').addClass('animate__animated animate__fadeOut')
@@ -489,6 +501,23 @@ var app = new Vue({
                 $('.map .drop-point-alert-route').removeClass('animate__animated animate__fadeOut')
                 $('.map .drop-point-alert-route').addClass('animate__animated animate__fadeIn')
             }, 1000)
+        },
+        getRouteMatch: function(coordinates) {
+            var self = this
+            var query = 
+                'https://api.mapbox.com/matching/v5/mapbox/driving' +
+                '/' +
+                coordinates +
+                '?geometries=geojson&steps=true&access_token=' +
+                this.mapApiKey
+            $.ajax({
+                method: 'GET',
+                url: query
+            }).done(function(data) {
+                var coords = data.matchings[0].geometry;
+                console.log('Matched route: ' + JSON.stringify(coords.coordinates));
+                self.addData('route', coords.coordinates)
+            });
         },
         resetNorth: function () {
             this.map.easeTo({
@@ -534,7 +563,8 @@ var app = new Vue({
                 
             }
             if (type === "route") {
-                
+                let data = new Route(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Pending Route', 'Awaiting turn-by-turn', '', new Date())
+                self.status = dbAdd("routes", data)
             }
         },
         delData: function (type, uuid, missionUUID) {
