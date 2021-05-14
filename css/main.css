@@ -143,7 +143,7 @@ p {
     opacity: 0.85 !important;
 }
 
-.map .drop-point-alert {
+.map .drop-point-alert, .map .drop-point-alert-route {
     display: none;
     z-index: 2;
     position: relative;
@@ -157,6 +157,15 @@ p {
     text-align: center;
     font-weight: 600;
     font-size: 14pt;
+}
+
+.map .drop-point-alert-route i {
+    font-size: 95%;
+    margin-left: 8px;
+    background-color: #e040fb;
+    padding: 5px;
+    border-radius: 7px;
+    cursor: pointer;
 }
 
 .map .editor i {

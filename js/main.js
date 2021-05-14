@@ -45,6 +45,18 @@ function Threat(mission, OB, phaseId, name, location, dateStart, dateEnd, persis
     this.persist = persist
 }
 
+function Route(mission, OB, name, startCoord, endCoord, detailTurnByTurn, details, date) {
+    this.uuid = uuid.v4()
+    this.mission = mission
+    this.OB = OB
+    this.name = name
+    this.startCoord = startCoord
+    this.endCoord = endCoord
+    this.detailTurnByTurn = detailTurnByTurn
+    this.details = details
+    this.date = date
+}
+
 function Emission(mission, threatId, type, location, majorAxisMeters, minorAxisMeters, ellipseAngle, name, details, emitDTG) {
     this.uuid = uuid.v4()
     this.mission = mission
@@ -107,7 +119,10 @@ var app = new Vue({
         informationCollection: turf.featureCollection([]),
         threatsCollection: turf.featureCollection([]),
         emissionsCollection: turf.featureCollection([]),
+        routeBuildCollection: turf.featureCollection([]),
+        routeFinalCollection: turf.featureCollection([]),
         allowPlot: false,
+        isCreatingRoute: false,
         status: {
             phases: [],
             information: [],
@@ -118,6 +133,7 @@ var app = new Vue({
         editingPhase: 0,
         editor: {},
         editingPoint: {},
+        editingRouteCoords: [],
         editingLat: 0,
         editingLng: 0,
         editingMGRS: '',
@@ -191,10 +207,29 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.informationCollection
                 })
+                self.map.addSource('routeBuildPoints', {
+                    'type': 'geojson',
+                    'data': self.routeBuildCollection
+                })
                 self.map.addLayer({
-                    'id': 'points',
+                    'id': 'informationPoints',
                     'type': 'symbol',
                     'source': 'informationPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    'id': 'routeBuildPoints',
+                    'type': 'symbol',
+                    'source': 'routeBuildPoints',
                     'layout': {
                       // get the icon name from the source's "icon" property
                       // concatenate the name to get an icon from the style's sprite sheet
@@ -229,10 +264,29 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.informationCollection
                 })
+                self.map.addSource('routeBuildPoints', {
+                    'type': 'geojson',
+                    'data': self.routeBuildCollection
+                })
                 self.map.addLayer({
-                    'id': 'points',
+                    'id': 'informationPoints',
                     'type': 'symbol',
                     'source': 'informationPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    'id': 'routeBuildPoints',
+                    'type': 'symbol',
+                    'source': 'routeBuildPoints',
                     'layout': {
                       // get the icon name from the source's "icon" property
                       // concatenate the name to get an icon from the style's sprite sheet
@@ -308,10 +362,17 @@ var app = new Vue({
                     self.allowPlot = false
                 }
 
+                if (self.isCreatingRoute) {
+                    if (self.plotType === 'route') {
+                        self.editingRouteCoords.push(e.lngLat)
+                        self.redrawMap()
+                    }
+                }
+
                 self.getElevation(self.mouse_coordinates.lng, self.mouse_coordinates.lat)
             })
 
-            self.map.on('click', 'points', function(e) {        
+            self.map.on('click', 'informationPoints', function(e) {        
                 self.editingPoint = dbPointGet('information', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active');
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
@@ -321,12 +382,16 @@ var app = new Vue({
                 self.editingLng = self.editingPoint.location.lng
             })
 
-            self.map.on('mouseenter', 'points', function() {
-                self.map.getCanvas().style.cursor = 'pointer'
+            self.map.on('mouseenter', 'informationPoints', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'pointer'
+                }
             })
             // Change it back to a pointer when it leaves.
             app.map.on('mouseleave', 'points', function() {
-                self.map.getCanvas().style.cursor = 'grab'
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'grab'
+                }
             })
 
             self.map.on('mousemove', function(e) {
@@ -371,6 +436,8 @@ var app = new Vue({
         },
         redrawMap: function () {
             this.informationCollection = turf.featureCollection([])
+            this.routeBuildCollection = turf.featureCollection([])
+            this.routeFinalCollection = turf.featureCollection([])
             var self = this
             self.status.information.forEach(function (info) {
                 if (info.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
@@ -378,6 +445,13 @@ var app = new Vue({
                     self.informationCollection.features.push(new_point)
                 }
                 self.map.getSource('informationPoints').setData(self.informationCollection)
+            })
+            
+            self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
+            self.editingRouteCoords.forEach(function (routeSegment) {
+                var new_point = turf.point([routeSegment.lng, routeSegment.lat], { type: 'route', title: 'Route Segment', icon: 'monument'})
+                self.routeBuildCollection.features.push(new_point)
+                self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
             })
         },
         changeMapStyle: function () {
@@ -390,10 +464,31 @@ var app = new Vue({
             }
         },
         startPointCapture: function (type) {
-            $('.map .drop-point-alert').show()
-            this.map.getCanvas().style.cursor = 'crosshair'
-            this.plotType = type
-            this.allowPlot = true
+            if (type != 'route') {
+                $('.map .drop-point-alert').show()
+                this.map.getCanvas().style.cursor = 'crosshair'
+                this.plotType = type
+                this.allowPlot = true
+            } else {
+                $('.map .drop-point-alert-route').show()
+                this.map.getCanvas().style.cursor = 'crosshair'
+                this.plotType = type
+                this.isCreatingRoute = true
+            }
+        },
+        finalizeRoute: function () {
+            this.editingRouteCoords = []
+
+            $('.map .drop-point-alert-route').removeClass('animate__animated animate__fadeIn')
+            $('.map .drop-point-alert-route').addClass('animate__animated animate__fadeOut')
+            this.map.getCanvas().style.cursor = 'grab';
+            this.isCreatingRoute = false
+            this.redrawMap()
+            setTimeout(function () {
+                $('.map .drop-point-alert-route').hide()
+                $('.map .drop-point-alert-route').removeClass('animate__animated animate__fadeOut')
+                $('.map .drop-point-alert-route').addClass('animate__animated animate__fadeIn')
+            }, 1000)
         },
         resetNorth: function () {
             this.map.easeTo({

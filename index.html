@@ -191,7 +191,7 @@
                     <i class="fas fa-map-marker-alt general tooltipped" id="addInfoPoint" data-position="right" data-tooltip="Add point" v-on:click="startPointCapture('infoPoint')"></i>
                     <br />
                     <i class="fas fa-map-marker-alt threat tooltipped" id="addThreatPoint" data-position="right" data-tooltip="Add threat"></i>
-                    <i class="fas fa-road threat tooltipped" id="addOpforRoute" data-position="right" data-tooltip="Add OPFOR route"></i>
+                    <i class="fas fa-road threat tooltipped" id="addOpforRoute" data-position="right" data-tooltip="Add OPFOR route" v-on:click="startPointCapture('route')"></i>
                     <br />
                     <i class="fas fa-bolt emission tooltipped" id="addEmissionPoint" data-position="right" data-tooltip="Add emission"></i>
                 </div>
@@ -199,6 +199,7 @@
                     <i class="fas fa-map general tooltipped" id="changeBaseMap" data-position="right" data-tooltip="Toggle basemap" v-on:click="changeMapStyle()"></i>
                 </div>
                 <p class="drop-point-alert animate__animated animate__fadeIn">Drop point</p>
+                <p class="drop-point-alert-route animate__animated animate__fadeIn">Building route <i class="fas fa-check" v-on:click="finalizeRoute()"></i></p>
                 <div class="editor-north-indicator animate__animated animate__fadeIn" v-on:click="resetNorth">
                     <p>N</p>
                     <img src="img/north-indicator.png" draggable="false"></img>
