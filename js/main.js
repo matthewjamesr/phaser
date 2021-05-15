@@ -45,7 +45,7 @@ function Threat(mission, OB, phaseId, name, location, dateStart, dateEnd, persis
     this.persist = persist
 }
 
-function Route(mission, OB, name, coordinates, detailTurnByTurn, details, date) {
+function Route(mission, name, coordinates, detailTurnByTurn, details, date) {
     this.uuid = uuid.v4()
     this.mission = mission
     this.name = name
@@ -131,9 +131,11 @@ var app = new Vue({
         },
         importState: '',
         editingPhase: 0,
-        editor: {},
+        pointDetailsEditor: {},
+        routeDetailsEditor: {},
         editingPoint: {},
         editingRouteCoords: [],
+        editingRoute: {},
         editingLat: 0,
         editingLng: 0,
         editingMGRS: '',
@@ -211,6 +213,10 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.routeBuildCollection
                 })
+                self.map.addSource('routeFinalPoints', {
+                    'type': 'geojson',
+                    'data': self.routeFinalCollection
+                })
                 self.map.addLayer({
                     'id': 'informationPoints',
                     'type': 'symbol',
@@ -230,6 +236,21 @@ var app = new Vue({
                     'id': 'routeBuildPoints',
                     'type': 'symbol',
                     'source': 'routeBuildPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    'id': 'routeFinalPoints',
+                    'type': 'line',
+                    'source': 'routeFinalPoints',
                     'layout': {
                       // get the icon name from the source's "icon" property
                       // concatenate the name to get an icon from the style's sprite sheet
@@ -268,6 +289,10 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.routeBuildCollection
                 })
+                self.map.addSource('routeFinalPoints', {
+                    'type': 'geojson',
+                    'data': self.routeFinalCollection
+                })
                 self.map.addLayer({
                     'id': 'informationPoints',
                     'type': 'symbol',
@@ -296,6 +321,21 @@ var app = new Vue({
                       'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
                       'text-offset': [0, 0.6],
                       'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    'id': 'routeFinalPoints',
+                    'type': 'line',
+                    'source': 'routeFinalPoints',
+                    'layout': {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#b71c1c',
+                        'line-width': 5,
+                        'line-opacity': 0.75,
+                        'line-dasharray': [1,4]
                     }
                 })
                 var layers = self.map.getStyle().layers
@@ -376,10 +416,17 @@ var app = new Vue({
                 self.editingPoint = dbPointGet('information', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active');
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
-                self.editor.setHtml(self.editingPoint.details, false)
+                self.pointDetailsEditor.setHtml(self.editingPoint.details, false)
                 $('#informationModal').modal('open')
                 self.editingLat = self.editingPoint.location.lat
                 self.editingLng = self.editingPoint.location.lng
+            })
+            self.map.on('click', 'routeFinalPoints', function(e) {    
+                self.editingRoute = dbPointGet('route', e.features[0].properties.id)[0]
+                $('.input-field label').addClass('active')
+                setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
+                self.routeDetailsEditor.setHtml(self.editingRoute.details, false)
+                $('#routeModal').modal('open')
             })
 
             self.map.on('mouseenter', 'informationPoints', function() {
@@ -388,7 +435,18 @@ var app = new Vue({
                 }
             })
             // Change it back to a pointer when it leaves.
-            app.map.on('mouseleave', 'points', function() {
+            app.map.on('mouseleave', 'informationPoints', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'grab'
+                }
+            })
+            self.map.on('mouseenter', 'routeFinalPoints', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'pointer'
+                }
+            })
+            // Change it back to a pointer when it leaves.
+            app.map.on('mouseleave', 'routeFinalPoints', function() {
                 if (self.allowPlot != true && self.isCreatingRoute != true) {
                     self.map.getCanvas().style.cursor = 'grab'
                 }
@@ -453,6 +511,14 @@ var app = new Vue({
                 self.routeBuildCollection.features.push(new_point)
                 self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
             })
+
+            self.status.routes.forEach(function (route) {
+                if (route.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                    var route = turf.lineString(route.coordinates, { id: route.uuid, type: 'route', added: route.date, title: route.name, icon: 'monument', description: route.details})
+                    self.routeFinalCollection.features.push(route)
+                }
+                self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
+            })
         },
         changeMapStyle: function () {
             if (this.mapStyle === 'streets-v11') {
@@ -477,7 +543,8 @@ var app = new Vue({
             }
         },
         finalizeRoute: function () {
-            let formattedCoords = '';
+            let formattedCoords = ''
+            let formattedRadius = ''
             var coordinates = this.editingRouteCoords
             this.editingRouteCoords = []
 
@@ -485,9 +552,11 @@ var app = new Vue({
             coordinates.forEach(function (coordinate, index) {
                 if (index < coordinates.length-1) {
                     formattedCoords += `${coordinate.lng},${coordinate.lat};`
+                    formattedRadius += '10;'
                 } else {
                     formattedCoords += `${coordinate.lng},${coordinate.lat}`
-                    self.getRouteMatch(formattedCoords)
+                    formattedRadius += '10'
+                    self.getRouteMatch(formattedCoords, formattedRadius)
                 }
             })
 
@@ -502,21 +571,20 @@ var app = new Vue({
                 $('.map .drop-point-alert-route').addClass('animate__animated animate__fadeIn')
             }, 1000)
         },
-        getRouteMatch: function(coordinates) {
+        getRouteMatch: function(coordinates, radius) {
             var self = this
-            var query = 
+
+            var query =
                 'https://api.mapbox.com/matching/v5/mapbox/driving' +
                 '/' +
-                coordinates +
-                '?geometries=geojson&steps=true&access_token=' +
-                this.mapApiKey
+                coordinates + '?geometries=geojson&steps=true&radiuses=' + radius + '&access_token=' + this.mapApiKey
             $.ajax({
                 method: 'GET',
                 url: query
             }).done(function(data) {
                 var coords = data.matchings[0].geometry;
                 console.log('Matched route: ' + JSON.stringify(coords.coordinates));
-                self.addData('route', coords.coordinates)
+                self.addData('route', coords.coordinates, data.matchings[0])
             });
         },
         resetNorth: function () {
@@ -526,7 +594,7 @@ var app = new Vue({
                 easing: x => x
             })
         },
-        addData: function (type, location) {
+        addData: function (type, location, routeMatchData) {
             var self = this
             $('#phaseModal').modal('close')
             if (type === "phase") {
@@ -563,8 +631,18 @@ var app = new Vue({
                 
             }
             if (type === "route") {
-                let data = new Route(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Pending Route', 'Awaiting turn-by-turn', '', new Date())
+                console.log(JSON.stringify(routeMatchData))
+                var legs = routeMatchData.legs;
+                var tripDirections = `<h3>Route info</h3><p>Estimated travel time: ${Math.floor(routeMatchData.duration / 60)} min.</p><br /><h4>Route directions</h4><ol>`
+                for (var i = 0; i < legs.length; i++) {
+                    var steps = legs[i].steps
+                    for (var j = 0; j < steps.length; j++) {
+                        tripDirections += `<li>${steps[j].maneuver.instruction}</li>`
+                    }
+                }
+                let data = new Route(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, 'Pending Route', location, '', tripDirections+'</ol>', new Date())
                 self.status = dbAdd("routes", data)
+                this.redrawMap()
             }
         },
         delData: function (type, uuid, missionUUID) {
@@ -575,17 +653,24 @@ var app = new Vue({
                         $(".map .lock").show()
                     }
                 })
-            } else if (type === "information") {
+            } else if (type === "information" || type === "routes") {
                 this.redrawMap()
                 $('#informationModal').modal('close')
+                $('#routeModal').modal('close')
             } else {
                 this.resetUI()
             }
         },
         updatePoint: function (type, uuid) {
             $('#informationModal').modal('close')
-            this.status.information = exports.dbPointUpdate(type, uuid, this.editingPoint.name, this.editor.getHtml(), this.editingLng, this.editingLat)
-            console.log(JSON.stringify(this.status.information))
+            $('#routeModal').modal('close')
+            if (type === "information") {
+                this.status.information = exports.dbPointUpdate(type, uuid, this.editingPoint.name, this.pointDetailsEditor.getHtml(), this.editingLng, this.editingLat)
+            }
+            if (type === "routes") {
+                this.status.routes = exports.dbPointUpdate(type, uuid, this.editingRoute.name, this.routeDetailsEditor.getHtml())
+            }
+            console.log(JSON.stringify(this.status.routes))
             this.redrawMap()
         },
         exportData: function () {
@@ -621,7 +706,10 @@ var app = new Vue({
             this.status.information = []
             this.status.threats = []
             this.status.emissions = []
+            this.status.routes = []
             this.informationCollection = turf.featureCollection([])
+            this.routeBuildCollection = turf.featureCollection([])
+            this.routeFinalCollection = turf.featureCollection([])
             this.map.getSource('informationPoints').setData(this.informationCollection)
         },
         enterPhaseBuilder: function (phase) {
@@ -714,8 +802,15 @@ var app = new Vue({
                     }, 1000)
                 }, 1000)
 
-                self.editor = new Editor({
-                    el: document.querySelector('#md-editor'),
+                self.pointDetailsEditor = new Editor({
+                    el: document.querySelector('#md-editor-points'),
+                    previewStyle: 'vertical',
+                    height: '280px',
+                    initialEditType: 'wysiwyg'
+                })
+
+                self.routeDetailsEditor = new Editor({
+                    el: document.querySelector('#md-editor-routes'),
                     previewStyle: 'vertical',
                     height: '280px',
                     initialEditType: 'wysiwyg'

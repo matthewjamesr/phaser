@@ -230,11 +230,31 @@
                                 <input type="text" class="datepicker" id="dateStart" v-model="editingPoint.date" />
                                 <label class="active">Created</label>
                             </div>
-                            <div class="col s12" id="md-editor"></div>
+                            <div class="col s12" id="md-editor-points"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="updatePoint('information', editingPoint.uuid)">Update</a>
+                    </div>
+                </div>
+                <div id="routeModal" class="modal">
+                    <div class="modal-content left-align">
+                        <h2>Route: {{ editingRoute.name }} <i class="far fa-trash-alt red-text" style="cursor: pointer;" v-on:click="delData('routes', editingRoute.uuid)"></i></i></h2>
+                        <p>UUID: {{ editingRoute.uuid }}</p>
+                        <div class="row">
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="editingRoute.name" />
+                                <label class="active">Name</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="datepicker" id="dateStart" v-model="editingRoute.date" />
+                                <label class="active">Created</label>
+                            </div>
+                            <div class="col s12" id="md-editor-routes"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="updatePoint('routes', editingRoute.uuid)">Update</a>
                     </div>
                 </div>
             </div>

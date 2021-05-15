@@ -9,6 +9,7 @@ export function dbInit() {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log("Initialized new empty database\n\n"+JSON.stringify(data))
         return data
     } else {
@@ -17,6 +18,7 @@ export function dbInit() {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log("Database already present\n\n"+JSON.stringify(data))
         return data
     }
@@ -29,6 +31,7 @@ export function dbReset() {
     db.createTable("phases", ["uuid", "name", "lead", "dateStart", "dateEnd", "missions"])
     db.createTable("information", ["uuid", "mission", "name", "details", "location", "date"])
     db.createTable("threats", ["uuid", "OB", "phaseId", "name", "location", "dateStart", "dateEnd", "persist"])
+    db.createTable("routes", ["uuid", "mission", "name", "coordinates", "detailsTurnByTurn", "details", "date"])
     db.createTable("emissions", ["uuid", "threatId", "type", "majorAxisMeters", "minorAxisMeters", "ellipseAngle", "name", "details", "emitDTG"])
 
     db.commit()
@@ -66,6 +69,7 @@ export function dbAdd(type, data, selectedUUID) {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log(`Inserting mission record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
         return data
     } else {
@@ -76,6 +80,7 @@ export function dbAdd(type, data, selectedUUID) {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log(`Inserting record to table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
         return data
     }
@@ -89,11 +94,18 @@ export function dbPointGet(type, uuid) {
         })
     }
 
+    if (type === "route") {
+        data = db.queryAll("routes", {
+            query: {uuid: uuid}
+        })
+    }
+
     return data
 }
 
 export function dbPointUpdate(type, uuid, name, details, lng, lat) {
     let data = {}
+
     if (type === "information") {
         data = db.update("information", {uuid: uuid}, function(row) {
             row.name = name
@@ -105,9 +117,20 @@ export function dbPointUpdate(type, uuid, name, details, lng, lat) {
         })
 
         db.commit()
+        return db.queryAll("information")
+    }
+    if (type === "routes") {
+        data = db.update("routes", {uuid: uuid}, function(row) {
+            row.name = name
+            row.details = details
+
+            return row
+        })
+
+        db.commit()
+        return db.queryAll("routes")
     }
 
-    return db.queryAll("information")
 }
 
 export function dbDel(type, uuid, missionUUID) {
@@ -127,6 +150,7 @@ export function dbDel(type, uuid, missionUUID) {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log(`Removed mission record from table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
         return data
     } else {
@@ -137,6 +161,7 @@ export function dbDel(type, uuid, missionUUID) {
         data.information = db.queryAll("information")
         data.threats = db.queryAll("threats")
         data.emissions = db.queryAll("emissions")
+        data.routes = db.queryAll("routes")
         console.log(`Removed record from table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
         return data
     }
