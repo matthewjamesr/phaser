@@ -693,6 +693,10 @@ var app = new Vue({
                     self.status.information.push(info)
                     dbAdd("information", info)
                 })
+                data.routes.forEach(function (route) {
+                    self.status.routes.push(route)
+                    dbAdd("routes", route)
+                })
                 this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
             }
