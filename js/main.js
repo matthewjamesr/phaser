@@ -150,7 +150,7 @@ var app = new Vue({
     methods: {
         initMap: function () {
             var self = this
-      
+
             mapboxgl.accessToken = self.mapApiKey
             self.map = new mapboxgl.Map({
                 container: 'map',
@@ -169,7 +169,7 @@ var app = new Vue({
                         break
                     }
                 }
-                
+
                 self.map.addLayer(
                 {
                     'id': 'add-3d-buildings',
@@ -201,7 +201,7 @@ var app = new Vue({
                         'fill-extrusion-opacity': 0.8
                     }
                 },
-                
+
                 labelLayerId
                 )
 
@@ -345,7 +345,7 @@ var app = new Vue({
                         labelLayerId = layers[i].id
                         break
                     }
-                }    
+                }
                 self.map.addLayer(
                 {
                     'id': 'add-3d-buildings',
@@ -377,7 +377,7 @@ var app = new Vue({
                         'fill-extrusion-opacity': 0.6
                     }
                 },
-                
+
                 labelLayerId
                 )
                 self.redrawMap()
@@ -393,7 +393,7 @@ var app = new Vue({
                         $('.map .drop-point-alert').removeClass('animate__animated animate__fadeOut')
                         $('.map .drop-point-alert').addClass('animate__animated animate__fadeIn')
                     }, 1000)
-                    
+
                     if (self.plotType === 'infoPoint') {
                         self.addData('information', e.lngLat)
                         self.redrawMap()
@@ -412,7 +412,7 @@ var app = new Vue({
                 self.getElevation(self.mouse_coordinates.lng, self.mouse_coordinates.lat)
             })
 
-            self.map.on('click', 'informationPoints', function(e) {        
+            self.map.on('click', 'informationPoints', function(e) {
                 self.editingPoint = dbPointGet('information', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active');
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
@@ -421,7 +421,7 @@ var app = new Vue({
                 self.editingLat = self.editingPoint.location.lat
                 self.editingLng = self.editingPoint.location.lng
             })
-            self.map.on('click', 'routeFinalPoints', function(e) {    
+            self.map.on('click', 'routeFinalPoints', function(e) {
                 self.editingRoute = dbPointGet('route', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active')
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
@@ -457,7 +457,7 @@ var app = new Vue({
                 self.mouse_coordinates.lat = e.lngLat.lat
                 self.mouse_coordinates.mgrs = mgrs.forward([e.lngLat.lng, e.lngLat.lat])
                 self.changeCoordinateSystem()
-                
+
                 let bullseye
                 if (self.activeRange === 'Crestview') {
                     bullseye = turf.point(mgrs.toPoint('16REV3068610382'))
@@ -502,14 +502,12 @@ var app = new Vue({
                     var new_point = turf.point([info.location.lng, info.location.lat], { id: info.uuid, type: 'information', added: info.date, title: info.name, icon: 'monument', lng: info.location.lng, lat: info.location.lat, description: info.details})
                     self.informationCollection.features.push(new_point)
                 }
-                self.map.getSource('informationPoints').setData(self.informationCollection)
             })
-            
+
             self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
             self.editingRouteCoords.forEach(function (routeSegment) {
                 var new_point = turf.point([routeSegment.lng, routeSegment.lat], { type: 'route', title: 'Route Segment', icon: 'monument'})
                 self.routeBuildCollection.features.push(new_point)
-                self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
             })
 
             self.status.routes.forEach(function (route) {
@@ -517,8 +515,11 @@ var app = new Vue({
                     var route = turf.lineString(route.coordinates, { id: route.uuid, type: 'route', added: route.date, title: route.name, icon: 'monument', description: route.details})
                     self.routeFinalCollection.features.push(route)
                 }
-                self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
             })
+
+            self.map.getSource('informationPoints').setData(self.informationCollection)
+            self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
+            self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
         },
         changeMapStyle: function () {
             if (this.mapStyle === 'streets-v11') {
@@ -628,7 +629,7 @@ var app = new Vue({
                 dbAdd("emissions", data)
             }
             if (type === "OPFOR") {
-                
+
             }
             if (type === "route") {
                 console.log(JSON.stringify(routeMatchData))
@@ -647,6 +648,7 @@ var app = new Vue({
         },
         delData: function (type, uuid, missionUUID) {
             this.status = dbDel(type, uuid, missionUUID)
+
             if (missionUUID != null) {
                 this.status.phases.forEach(function(phase) {
                     if (phase.uuid === uuid && phase.missions.length == 0) {
@@ -728,7 +730,7 @@ var app = new Vue({
             } else {
                 this.resetUI()
             }
-            
+
         },
         selectActiveMission: function (missionIndex, e) {
             this.activeMissionIndex = missionIndex
