@@ -33,13 +33,17 @@ function Information(mission, name, details, location, date) {
     this.date = date
 }
 
-function Threat(mission, OB, phaseId, name, location, dateStart, dateEnd, persist) {
+function Threat(mission, OB, phaseId, name, details, system, range, location, connections, dateStart, dateEnd, persist) {
     this.uuid = uuid.v4()
     this.mission = mission
     this.OB = OB
     this.phaseId = phaseId
     this.name = name
+    this.details = details
+    this.system = system
+    this.range = range
     this.location = location
+    this.connections = connections
     this.dateStart = dateStart
     this.dateEnd = dateEnd
     this.persist = persist
@@ -116,7 +120,8 @@ var app = new Vue({
         },
         plotType: '',
         informationCollection: turf.featureCollection([]),
-        threatsCollection: turf.featureCollection([]),
+        threatCollection: turf.featureCollection([]),
+        threatCirclesCollection: turf.featureCollection([]),
         emissionsCollection: turf.featureCollection([]),
         routeBuildCollection: turf.featureCollection([]),
         routeFinalCollection: turf.featureCollection([]),
@@ -133,9 +138,11 @@ var app = new Vue({
         editingPhase: 0,
         pointDetailsEditor: {},
         routeDetailsEditor: {},
+        threatDetailsEditor: {},
         editingPoint: {},
         editingRouteCoords: [],
         editingRoute: {},
+        editingThreat: {},
         editingLat: 0,
         editingLng: 0,
         editingMGRS: '',
@@ -217,6 +224,18 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.routeFinalCollection
                 })
+                self.map.addSource('threatPoints', {
+                    'type': 'geojson',
+                    'data': self.threatCollection
+                })
+                self.map.addSource('circle-fill', {
+                    'type': 'geojson',
+                    'data': self.threatCirclesCollection
+                })
+                self.map.addSource('circle-line', {
+                    'type': 'geojson',
+                    'data': self.threatCirclesCollection
+                })
                 self.map.addLayer({
                     'id': 'informationPoints',
                     'type': 'symbol',
@@ -262,6 +281,41 @@ var app = new Vue({
                       'text-anchor': 'top'
                     }
                 })
+                self.map.addLayer({
+                    'id': 'threatPoints',
+                    'type': 'symbol',
+                    'source': 'threatPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    "id": `circle-fill`,
+                    "type": "fill",
+                    "source": "circle-fill",
+                    "paint": {
+                        "fill-color": "red",
+                        "fill-opacity": 0.15
+                    }
+                })
+                self.map.addLayer({
+                    "id": `circle-line`,
+                    "type": "line",
+                    "source": "circle-line",
+                    "paint": {
+                        "line-color": "blue",
+                        "line-opacity": 0.5,
+                        "line-width": 2,
+                        "line-offset": 0
+                    }
+                })
             })
 
             self.map.on('styledata', function () {
@@ -292,6 +346,18 @@ var app = new Vue({
                 self.map.addSource('routeFinalPoints', {
                     'type': 'geojson',
                     'data': self.routeFinalCollection
+                })
+                self.map.addSource('threatPoints', {
+                    'type': 'geojson',
+                    'data': self.threatCollection
+                })
+                self.map.addSource('circle-fill', {
+                    'type': 'geojson',
+                    'data': self.threatCirclesCollection
+                })
+                self.map.addSource('circle-line', {
+                    'type': 'geojson',
+                    'data': self.threatCirclesCollection
                 })
                 self.map.addLayer({
                     'id': 'informationPoints',
@@ -338,6 +404,42 @@ var app = new Vue({
                         'line-dasharray': [1,4]
                     }
                 })
+                self.map.addLayer({
+                    'id': 'threatPoints',
+                    'type': 'symbol',
+                    'source': 'threatPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
+                self.map.addLayer({
+                    "id": `circle-fill`,
+                    "type": "fill",
+                    "source": "circle-fill",
+                    "paint": {
+                        "fill-color": "red",
+                        "fill-opacity": 0.15
+                    }
+                })
+                self.map.addLayer({
+                    "id": `circle-line`,
+                    "type": "line",
+                    "source": "circle-line",
+                    "paint": {
+                        "line-color": "blue",
+                        "line-opacity": 0.5,
+                        "line-width": 2,
+                        "line-offset": 0
+                    }
+                })
+
                 var layers = self.map.getStyle().layers
                 var labelLayerId
                 for (var i = 0; i < layers.length; i++) {
@@ -398,6 +500,10 @@ var app = new Vue({
                         self.addData('information', e.lngLat)
                         self.redrawMap()
                     }
+                    if (self.plotType === 'threatPoint') {
+                        self.addData('threats', e.lngLat)
+                        self.redrawMap()
+                    }
 
                     self.allowPlot = false
                 }
@@ -413,6 +519,7 @@ var app = new Vue({
             })
 
             self.map.on('click', 'informationPoints', function(e) {
+                self.editingPoint = {}
                 self.editingPoint = dbPointGet('information', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active');
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
@@ -421,7 +528,18 @@ var app = new Vue({
                 self.editingLat = self.editingPoint.location.lat
                 self.editingLng = self.editingPoint.location.lng
             })
+            self.map.on('click', 'threatPoints', function(e) {
+                self.editingThreat = {}
+                self.editingThreat = dbPointGet('threat', e.features[0].properties.id)[0]
+                $('.input-field label').addClass('active');
+                setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
+                self.threatDetailsEditor.setHtml(self.editingThreat.details, false)
+                $('#threatModal').modal('open')
+                self.editingLat = self.editingThreat.location.lat
+                self.editingLng = self.editingThreat.location.lng
+            })
             self.map.on('click', 'routeFinalPoints', function(e) {
+                self.editingRoute = {}
                 self.editingRoute = dbPointGet('route', e.features[0].properties.id)[0]
                 $('.input-field label').addClass('active')
                 setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
@@ -447,6 +565,17 @@ var app = new Vue({
             })
             // Change it back to a pointer when it leaves.
             app.map.on('mouseleave', 'routeFinalPoints', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'grab'
+                }
+            })
+            self.map.on('mouseenter', 'threatPoints', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'pointer'
+                }
+            })
+            // Change it back to a pointer when it leaves.
+            app.map.on('mouseleave', 'threatPoints', function() {
                 if (self.allowPlot != true && self.isCreatingRoute != true) {
                     self.map.getCanvas().style.cursor = 'grab'
                 }
@@ -492,10 +621,18 @@ var app = new Vue({
                 self.mouse_coordinates.elevation = elevation
             })
         },
+        getCircle: function (lng, lat, radius, uuid) {
+            var options = {steps: 20, units: 'kilometers', properties: {id: `${uuid}-circle`}}
+            var circle = turf.circle([lng, lat], radius, options)
+            return circle
+        },
         redrawMap: function () {
             this.informationCollection = turf.featureCollection([])
             this.routeBuildCollection = turf.featureCollection([])
             this.routeFinalCollection = turf.featureCollection([])
+            this.threatCollection = turf.featureCollection([])
+            this.threatCirclesCollection = turf.featureCollection([])
+
             var self = this
             self.status.information.forEach(function (info) {
                 if (info.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
@@ -517,9 +654,24 @@ var app = new Vue({
                 }
             })
 
+            self.status.threats.forEach(function (threat) {
+                var params = threat
+                if (threat.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                    var threat = turf.point([threat.location.lng, threat.location.lat], { id: threat.uuid, type: 'threat', icon: 'monument', title: threat.name, drawRange: threat.range})
+                    self.threatCollection.features.push(threat)
+
+                    if (parseInt(params.range) > 0) {
+                        self.threatCirclesCollection.features.push(self.getCircle(params.location.lng, params.location.lat, parseInt(params.range), params.uuid))
+                    }
+                }
+            })
+
             self.map.getSource('informationPoints').setData(self.informationCollection)
             self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
             self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
+            self.map.getSource('threatPoints').setData(self.threatCollection)
+            self.map.getSource('circle-fill').setData(self.threatCirclesCollection)
+            self.map.getSource('circle-line').setData(self.threatCirclesCollection)
         },
         changeMapStyle: function () {
             if (this.mapStyle === 'streets-v11') {
@@ -620,9 +772,14 @@ var app = new Vue({
                 this.redrawMap()
             }
 
-            if (type === "threat") {
-                let data = new Threat(self.addDataForm.OB, self.addDataForm.phaseId, self.addDataForm.name, self.addDataForm.location, $('#dateStart').val(), $('#dateEnd').val(), self.addDataForm.persist)
+            if (type === "threats") {
+                let data = new Threat(self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid, '', self.status.phases[self.activePhaseIndex].uuid, 'Pending', 'More details about this threat', '', 0, location, '', $('#dateStart').val(), $('#dateEnd').val(), false)
+                self.editingThreat = data
+                self.editingLng = location.lng
+                self.editingLat = location.lat
                 self.status = dbAdd("threats", data)
+                $('#threatModal').modal('open')
+                this.redrawMap()
             }
             if (type === "emission") {
                 let data = new Emission(self.addDataForm.threatId, self.addDataForm.type, self.addDataForm.majorAxisMeters, self.addDataForm.minorAxisMeters, self.addDataForm.ellipseAngle, self.addDataForm.name, self.addDataForm.details, self.addDataForm.emitDTG)
@@ -655,10 +812,11 @@ var app = new Vue({
                         $(".map .lock").show()
                     }
                 })
-            } else if (type === "information" || type === "routes") {
+            } else if (type === "information" || type === "routes" || type === "threats") {
                 this.redrawMap()
                 $('#informationModal').modal('close')
                 $('#routeModal').modal('close')
+                $('#threatModal').modal('close')
             } else {
                 this.resetUI()
             }
@@ -666,13 +824,16 @@ var app = new Vue({
         updatePoint: function (type, uuid) {
             $('#informationModal').modal('close')
             $('#routeModal').modal('close')
+            $('#threatModal').modal('close')
             if (type === "information") {
-                this.status.information = exports.dbPointUpdate(type, uuid, this.editingPoint.name, this.pointDetailsEditor.getHtml(), this.editingLng, this.editingLat)
+                this.status.information = exports.dbPointUpdate(type, uuid, this.editingLng, this.editingLat, this.pointDetailsEditor.getHtml(), this.editingPoint)
             }
             if (type === "routes") {
-                this.status.routes = exports.dbPointUpdate(type, uuid, this.editingRoute.name, this.routeDetailsEditor.getHtml())
+                this.status.routes = exports.dbPointUpdate(type, uuid, '', '', this.routeDetailsEditor.getHtml(), this.editingRoute)
             }
-            console.log(JSON.stringify(this.status.routes))
+            if (type === "threats") {
+                this.status.threats = exports.dbPointUpdate(type, uuid, this.editingLng, this.editingLat, this.threatDetailsEditor.getHtml(), this.editingThreat)
+            }
             this.redrawMap()
         },
         exportData: function () {
@@ -817,6 +978,13 @@ var app = new Vue({
 
                 self.routeDetailsEditor = new Editor({
                     el: document.querySelector('#md-editor-routes'),
+                    previewStyle: 'vertical',
+                    height: '280px',
+                    initialEditType: 'wysiwyg'
+                })
+
+                self.threatDetailsEditor = new Editor({
+                    el: document.querySelector('#md-editor-threats'),
                     previewStyle: 'vertical',
                     height: '280px',
                     initialEditType: 'wysiwyg'

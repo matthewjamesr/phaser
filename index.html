@@ -38,7 +38,7 @@
                 </div>
             </div>
         </div>
-        <div class="row nav"> 
+        <div class="row nav">
             <nav>
                 <div class="nav-wrapper deep-purple darken-2" style="z-index: +50;">
                     <a href="#!" class="brand-logo center" v-on:click="resetUI()">
@@ -119,8 +119,8 @@
                         <h3><i class="fas fa-long-arrow-alt-left" v-on:click="resetUI()"></i>{{editingPhase.name}} <small>{{editingPhase.dateStart}} - {{editingPhase.dateEnd}}</small></h3>
                         <pre style="font-size: 8pt; clear: left;">{{editingPhase.uuid}}</pre>
                         <p style="font-size: 15pt; clear: left;">
-                            <b>Lead:</b> {{editingPhase.lead}} 
-                            <b style="margin-left:10px;">Add mission:</b> 
+                            <b>Lead:</b> {{editingPhase.lead}}
+                            <b style="margin-left:10px;">Add mission:</b>
                             <a class="modal-trigger" data-target="missionModal"><i class="fas fa-plus purple-text text-accent-2 right-align" style="margin-left: 5px;"></i></a>
                         </p>
                         <div class="row">
@@ -190,7 +190,7 @@
                 <div class="editor animate__animated animate__fadeIn">
                     <i class="fas fa-map-marker-alt general tooltipped" id="addInfoPoint" data-position="right" data-tooltip="Add point" v-on:click="startPointCapture('infoPoint')"></i>
                     <br />
-                    <i class="fas fa-map-marker-alt threat tooltipped" id="addThreatPoint" data-position="right" data-tooltip="Add threat"></i>
+                    <i class="fas fa-map-marker-alt threat tooltipped" id="addThreatPoint" data-position="right" data-tooltip="Add threat" v-on:click="startPointCapture('threatPoint')"></i>
                     <i class="fas fa-road threat tooltipped" id="addOpforRoute" data-position="right" data-tooltip="Add OPFOR route" v-on:click="startPointCapture('route')"></i>
                     <br />
                     <i class="fas fa-bolt emission tooltipped" id="addEmissionPoint" data-position="right" data-tooltip="Add emission"></i>
@@ -235,6 +235,56 @@
                     </div>
                     <div class="modal-footer">
                         <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="updatePoint('information', editingPoint.uuid)">Update</a>
+                    </div>
+                </div>
+                <div id="threatModal" class="modal">
+                    <div class="modal-content left-align">
+                        <h2>Threat : {{ editingThreat.name }} <i class="far fa-trash-alt red-text" style="cursor: pointer;" v-on:click="delData('threats', editingThreat.uuid)"></i></i></h2>
+                        <p>UUID: {{ editingThreat.uuid }}</p>
+                        <div class="row">
+                            <div class="input-field col s6">
+                                <input type="text" class="validate" v-model="editingThreat.name" />
+                                <label class="active">Name</label>
+                            </div>
+                            <div class="input-field col s3">
+                                <input type="text" class="validate" v-model="editingLat" />
+                                <label class="active">Lat</label>
+                            </div>
+                            <div class="input-field col s3">
+                                <input type="text" class="validate" v-model="editingLat" />
+                                <label class="active">Lng</label>
+                            </div>
+                            <div class="input-field col s4">
+                                <select v-model="editingThreat.OB">
+                                  <option value="" disabled>Select Order of Battle</option>
+                                  <option>AOB</option>
+                                  <option>DMOB</option>
+                                  <option>EOB</option>
+                                  <option>GOB</option>
+                                </select>
+                                <label class="active">OB Type</label>
+                            </div>
+                            <div class="input-field col s4">
+                                <input type="text" class="validate" v-model="editingThreat.system" />
+                                <label class="active">System</label>
+                            </div>
+                            <div class="input-field col s4">
+                                <input type="text" class="validate" v-model="editingThreat.range" />
+                                <label class="active">Range (KM)</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="datepicker" id="dateStart" v-model="editingThreat.dateStart" />
+                                <label class="active">Start DTG</label>
+                            </div>
+                            <div class="input-field col s6">
+                                <input type="text" class="datepicker" id="dateStart" v-model="editingThreat.dateEnd" />
+                                <label class="active">End DTG</label>
+                            </div>
+                            <div class="col s12" id="md-editor-threats"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class=" waves-effect waves-dark btn-flat" v-on:click="updatePoint('threats', editingThreat.uuid)">Update</a>
                     </div>
                 </div>
                 <div id="routeModal" class="modal">
@@ -284,7 +334,7 @@
             }
         }
     </script>
-    
+
     <script type="text/javascript" src="js/depends/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="js/depends/vue.min.js"></script>
     <script type="text/javascript" src="js/depends/materialize.min.js"></script>
@@ -293,7 +343,7 @@
     <script type="text/javascript" src="js/depends/turf.min.js"></script>
     <script src="https://kit.fontawesome.com/e2eb6553b9.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/g/filesaver.js"></script>
-    
+
     <!--Import main logic-->
     <script type="module" src="js/db.js"></script>
     <script type="module" src="js/main.js"></script>

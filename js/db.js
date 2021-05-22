@@ -30,7 +30,7 @@ export function dbReset() {
 
     db.createTable("phases", ["uuid", "name", "lead", "dateStart", "dateEnd", "missions"])
     db.createTable("information", ["uuid", "mission", "name", "details", "location", "date"])
-    db.createTable("threats", ["uuid", "OB", "phaseId", "name", "location", "dateStart", "dateEnd", "persist"])
+    db.createTable("threats", ["uuid", "mission", "OB", "phaseId", "name", "details", "system", "range", "location", "connections", "dateStart", "dateEnd", "persist"])
     db.createTable("routes", ["uuid", "mission", "name", "coordinates", "detailsTurnByTurn", "details", "date"])
     db.createTable("emissions", ["uuid", "threatId", "type", "majorAxisMeters", "minorAxisMeters", "ellipseAngle", "name", "details", "emitDTG"])
 
@@ -100,15 +100,21 @@ export function dbPointGet(type, uuid) {
         })
     }
 
+    if (type === "threat") {
+        data = db.queryAll("threats", {
+            query: {uuid: uuid}
+        })
+    }
+
     return data
 }
 
-export function dbPointUpdate(type, uuid, name, details, lng, lat) {
+export function dbPointUpdate(type, uuid, lng, lat, details, params) {
     let data = {}
 
     if (type === "information") {
         data = db.update("information", {uuid: uuid}, function(row) {
-            row.name = name
+            row.name = params.name
             row.details = details
             row.location.lng = lng
             row.location.lat = lat
@@ -121,7 +127,7 @@ export function dbPointUpdate(type, uuid, name, details, lng, lat) {
     }
     if (type === "routes") {
         data = db.update("routes", {uuid: uuid}, function(row) {
-            row.name = name
+            row.name = params.name
             row.details = details
 
             return row
@@ -129,6 +135,23 @@ export function dbPointUpdate(type, uuid, name, details, lng, lat) {
 
         db.commit()
         return db.queryAll("routes")
+    }
+    if (type === "threats") {
+        data = db.update("threats", {uuid: uuid}, function(row) {
+            row.name = params.name
+            row.details = details
+            row.OB = params.OB
+            row.system = params.system
+            row.range = params.range
+            row.dateStart = params.dateStart
+            row.dateEnd = params.dateEnd
+            row.persist = params.persist
+
+            return row
+        })
+
+        db.commit()
+        return db.queryAll("threats")
     }
 
 }
