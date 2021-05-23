@@ -860,6 +860,10 @@ var app = new Vue({
                     self.status.routes.push(route)
                     dbAdd("routes", route)
                 })
+                data.threats.forEach(function (threat) {
+                    self.status.threats.push(threat)
+                    dbAdd("threats", threat)
+                })
                 this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
             }
