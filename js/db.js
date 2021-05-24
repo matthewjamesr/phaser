@@ -143,6 +143,7 @@ export function dbPointUpdate(type, uuid, lng, lat, details, params) {
             row.OB = params.OB
             row.system = params.system
             row.range = params.range
+            row.connections = params.connections
             row.dateStart = params.dateStart
             row.dateEnd = params.dateEnd
             row.persist = params.persist
@@ -187,5 +188,25 @@ export function dbDel(type, uuid, missionUUID) {
         data.routes = db.queryAll("routes")
         console.log(`Removed record from table ${type.toUpperCase()}\n${JSON.stringify(data)}`)
         return data
+    }
+}
+
+export function dbC2Match(type, owner, subordinate) {
+    let data
+
+    if (type === "threats") {
+        data = db.update("threats", {uuid: owner}, function(row) {
+            row.connections.connections.forEach(function (connection, index) {
+              if (connection.uuid === subordinate) {
+                row.connections.connections.splice(index, 1)
+                row.connections.count--
+              }
+            })
+
+            return row
+        })
+
+        db.commit()
+        return db.queryAll("threats")
     }
 }
