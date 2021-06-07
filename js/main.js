@@ -140,10 +140,12 @@ var app = new Vue({
         pointDetailsEditor: {},
         routeDetailsEditor: {},
         threatDetailsEditor: {},
+        emissionDetailsEditor: {},
         editingPoint: {},
         editingRouteCoords: [],
         editingRoute: {},
         editingThreat: {},
+        editingEmission: {},
         editingLat: 0,
         editingLng: 0,
         editingMGRS: '',
@@ -243,6 +245,10 @@ var app = new Vue({
                     'type': 'geojson',
                     'data': self.threatCirclesCollection
                 })
+                self.map.addSource('emissionPoints', {
+                    'type': 'geojson',
+                    'data': self.emissionsCollection
+                })
                 self.map.addLayer({
                     'id': 'informationPoints',
                     'type': 'symbol',
@@ -334,6 +340,21 @@ var app = new Vue({
                         "line-offset": 0
                     }
                 })
+                self.map.addLayer({
+                    'id': 'emissionPoints',
+                    'type': 'symbol',
+                    'source': 'emissionPoints',
+                    'layout': {
+                      // get the icon name from the source's "icon" property
+                      // concatenate the name to get an icon from the style's sprite sheet
+                      'icon-image': ['concat', ['get', 'icon'], '-15'],
+                      // get the title name from the source's "title" property
+                      'text-field': ['get', 'title'],
+                      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                      'text-offset': [0, 0.6],
+                      'text-anchor': 'top'
+                    }
+                })
             })
 
             self.map.on('styledata', function () {
@@ -382,6 +403,10 @@ var app = new Vue({
                 self.map.addSource('circle-line', {
                     'type': 'geojson',
                     'data': self.threatCirclesCollection
+                })
+                self.map.addSource('emissionPoints', {
+                    'type': 'geojson',
+                    'data': self.emissionsCollection
                 })
                 self.map.addLayer({
                     'id': 'informationPoints',
@@ -475,7 +500,7 @@ var app = new Vue({
                     "type": "fill",
                     "source": "circle-fill",
                     "paint": {
-                        "fill-color": "red",
+                        "fill-color": "#ff1744",
                         "fill-opacity": 0.15
                     }
                 })
@@ -484,10 +509,21 @@ var app = new Vue({
                     "type": "line",
                     "source": "circle-line",
                     "paint": {
-                        "line-color": "blue",
-                        "line-opacity": 0.5,
+                        "line-color": "#b71c1c",
+                        "line-opacity": 1,
                         "line-width": 2,
                         "line-offset": 0
+                    }
+                })
+                self.map.addLayer({
+                    "id": `emission-line`,
+                    "type": "line",
+                    "source": "emissionPoints",
+                    "paint": {
+                        "line-color": ["get", "color"],
+                        "line-opacity": 1,
+                        "line-width": 2,
+                        "line-offset": 0,
                     }
                 })
 
@@ -555,6 +591,10 @@ var app = new Vue({
                         self.addData('threats', e.lngLat)
                         self.redrawMap()
                     }
+                    if (self.plotType === 'emissionPoint') {
+                        self.addData('emissions', e.lngLat)
+                        self.redrawMap()
+                    }
 
                     self.allowPlot = false
                 }
@@ -609,6 +649,16 @@ var app = new Vue({
                 self.redrawMap()
                 M.toast({html: 'C2 connection removed', classes: 'rounded'})
             })
+            self.map.on('click', 'emission-line', function(e) {
+                self.editingEmission = {}
+                self.editingEmission = dbPointGet('emissions', e.features[0].properties.id)[0]
+                $('.input-field label').addClass('active');
+                setTimeout(function(){ $('.input-field label').addClass('active'); }, 1);
+                self.emissionDetailsEditor.setHtml(self.editingEmission.details, false)
+                $('#informationModal').modal('open')
+                self.editingLat = self.editingEmission.location.lat
+                self.editingLng = self.editingEmission.location.lng
+            })
             self.map.on('click', 'routeFinalPoints', function(e) {
                 self.editingRoute = {}
                 self.editingRoute = dbPointGet('route', e.features[0].properties.id)[0]
@@ -662,6 +712,17 @@ var app = new Vue({
                     self.map.getCanvas().style.cursor = 'grab'
                 }
             })
+            self.map.on('mouseenter', 'emission-line', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'pointer'
+                }
+            })
+            // Change it back to a pointer when it leaves.
+            app.map.on('mouseleave', 'emission-line', function() {
+                if (self.allowPlot != true && self.isCreatingRoute != true) {
+                    self.map.getCanvas().style.cursor = 'grab'
+                }
+            })
 
             self.map.on('mousemove', function(e) {
                 self.mouse_coordinates.lng = e.lngLat.lng
@@ -709,60 +770,83 @@ var app = new Vue({
             return circle
         },
         redrawMap: function () {
-            this.informationCollection = turf.featureCollection([])
-            this.routeBuildCollection = turf.featureCollection([])
-            this.routeFinalCollection = turf.featureCollection([])
-            this.threatCollection = turf.featureCollection([])
-            this.threatConnectionsCollection = turf.featureCollection([])
-            this.threatCirclesCollection = turf.featureCollection([])
+            if (this.selectedMissionUID != '') {
+              this.informationCollection = turf.featureCollection([])
+              this.routeBuildCollection = turf.featureCollection([])
+              this.routeFinalCollection = turf.featureCollection([])
+              this.threatCollection = turf.featureCollection([])
+              this.threatConnectionsCollection = turf.featureCollection([])
+              this.threatCirclesCollection = turf.featureCollection([])
+              this.emissionsCollection = turf.featureCollection([])
 
-            var self = this
-            self.status.information.forEach(function (info) {
-                if (info.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
-                    var new_point = turf.point([info.location.lng, info.location.lat], { id: info.uuid, type: 'information', added: info.date, title: info.name, icon: 'monument', lng: info.location.lng, lat: info.location.lat, description: info.details})
-                    self.informationCollection.features.push(new_point)
-                }
-            })
+              var self = this
+              self.status.information.forEach(function (info) {
+                  if (info.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                      var new_point = turf.point([info.location.lng, info.location.lat], { id: info.uuid, type: 'information', added: info.date, title: info.name, icon: 'monument', lng: info.location.lng, lat: info.location.lat, description: info.details})
+                      self.informationCollection.features.push(new_point)
+                  }
+              })
 
-            self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
-            self.editingRouteCoords.forEach(function (routeSegment) {
-                var new_point = turf.point([routeSegment.lng, routeSegment.lat], { type: 'route', title: 'Route Segment', icon: 'monument'})
-                self.routeBuildCollection.features.push(new_point)
-            })
+              self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
+              self.editingRouteCoords.forEach(function (routeSegment) {
+                  var new_point = turf.point([routeSegment.lng, routeSegment.lat], { type: 'route', title: 'Route Segment', icon: 'monument'})
+                  self.routeBuildCollection.features.push(new_point)
+              })
 
-            self.status.routes.forEach(function (route) {
-                if (route.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
-                    var route = turf.lineString(route.coordinates, { id: route.uuid, type: 'route', added: route.date, title: route.name, icon: 'monument', description: route.details})
-                    self.routeFinalCollection.features.push(route)
-                }
-            })
+              self.status.routes.forEach(function (route) {
+                  if (route.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                      var route = turf.lineString(route.coordinates, { id: route.uuid, type: 'route', added: route.date, title: route.name, icon: 'monument', description: route.details})
+                      self.routeFinalCollection.features.push(route)
+                  }
+              })
 
-            self.status.threats.forEach(function (threat) {
-                var params = threat
-                if (threat.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
-                    var threat = turf.point([threat.location.lng, threat.location.lat], { id: threat.uuid, type: 'threat', icon: 'monument', title: threat.name, drawRange: threat.range})
-                    self.threatCollection.features.push(threat)
+              self.status.threats.forEach(function (threat) {
+                  var params = threat
+                  if (threat.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                      var threat = turf.point([threat.location.lng, threat.location.lat], { id: threat.uuid, type: 'threat', icon: 'monument', title: threat.name, drawRange: threat.range})
+                      self.threatCollection.features.push(threat)
 
-                    if (parseInt(params.range) > 0) {
-                        self.threatCirclesCollection.features.push(self.getCircle(params.location.lng, params.location.lat, parseInt(params.range), params.uuid))
-                    }
+                      if (parseInt(params.range) > 0) {
+                          self.threatCirclesCollection.features.push(self.getCircle(params.location.lng, params.location.lat, parseInt(params.range), params.uuid))
+                      }
 
-                    if (params.connections.count > 0) {
-                        params.connections.connections.forEach((connection, i) => {
-                            var line = turf.lineString([[connection.location.lng, connection.location.lat], [params.location.lng, params.location.lat]], { owner: params.uuid, subordinate: connection.uuid, type: 'connection'})
-                            self.threatConnectionsCollection.features.push(line)
-                        })
-                    }
-                }
-            })
+                      if (params.connections.count > 0) {
+                          params.connections.connections.forEach((connection, i) => {
+                              var line = turf.lineString([[connection.location.lng, connection.location.lat], [params.location.lng, params.location.lat]], { owner: params.uuid, subordinate: connection.uuid, type: 'connection'})
+                              self.threatConnectionsCollection.features.push(line)
+                          })
+                      }
+                  }
+              })
 
-            self.map.getSource('informationPoints').setData(self.informationCollection)
-            self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
-            self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
-            self.map.getSource('threatPoints').setData(self.threatCollection)
-            self.map.getSource('threatConnections').setData(self.threatConnectionsCollection)
-            self.map.getSource('circle-fill').setData(self.threatCirclesCollection)
-            self.map.getSource('circle-line').setData(self.threatCirclesCollection)
+              self.status.emissions.forEach(function (emission) {
+                  if (emission.mission === self.status.phases[self.activePhaseIndex].missions[self.activeMissionIndex].uuid) {
+                      var new_point = turf.point([emission.location.lng, emission.location.lat], { id: emission.uuid, type: 'emission', added: emission.date, title: emission.name, icon: 'monument', lng: emission.location.lng, lat: emission.location.lat, description: emission.details})
+                      self.emissionsCollection.features.push(new_point)
+                  }
+              })
+
+              var center = [-86.78819960652615, 30.522645014418885];
+              var xSemiAxis = 5;
+              var ySemiAxis = 2;
+              var ellipse = turf.ellipse(center, xSemiAxis, ySemiAxis, {angle: 45, properties: {color: '#76ff03'}});
+              self.emissionsCollection.features.push(ellipse)
+
+              var center = [-86.73789958039649, 30.561176591492185];
+              var xSemiAxis = 8;
+              var ySemiAxis = 1.6;
+              var ellipse = turf.ellipse(center, xSemiAxis, ySemiAxis, {angle: 135, properties: {color: '#ffd600'}});
+              self.emissionsCollection.features.push(ellipse)
+
+              self.map.getSource('informationPoints').setData(self.informationCollection)
+              self.map.getSource('routeBuildPoints').setData(self.routeBuildCollection)
+              self.map.getSource('routeFinalPoints').setData(self.routeFinalCollection)
+              self.map.getSource('threatPoints').setData(self.threatCollection)
+              self.map.getSource('threatConnections').setData(self.threatConnectionsCollection)
+              self.map.getSource('circle-fill').setData(self.threatCirclesCollection)
+              self.map.getSource('circle-line').setData(self.threatCirclesCollection)
+              self.map.getSource('emissionPoints').setData(self.emissionsCollection)
+            }
         },
         changeMapStyle: function () {
             if (this.mapStyle === 'streets-v11') {
@@ -876,7 +960,13 @@ var app = new Vue({
             }
             if (type === "emission") {
                 let data = new Emission(self.addDataForm.threatId, self.addDataForm.type, self.addDataForm.majorAxisMeters, self.addDataForm.minorAxisMeters, self.addDataForm.ellipseAngle, self.addDataForm.name, self.addDataForm.details, self.addDataForm.emitDTG)
-                dbAdd("emissions", data)
+                self.editingEmission = data
+                self.editingLng = location.lng
+                self.editingLat = location.lat
+                self.status = dbAdd("emissions", data)
+                M.toast({html: 'Emission added', classes: 'rounded'})
+                $('#emissiontModal').modal('open')
+                this.redrawMap()
             }
             if (type === "route") {
                 console.log(JSON.stringify(routeMatchData))
@@ -904,11 +994,12 @@ var app = new Vue({
                         $(".map .lock").show()
                     }
                 })
-            } else if (type === "information" || type === "routes" || type === "threats") {
+            } else if (type === "information" || type === "routes" || type === "threats" || type === "emissions") {
                 this.redrawMap()
                 $('#informationModal').modal('close')
                 $('#routeModal').modal('close')
                 $('#threatModal').modal('close')
+                $('#emissionModal').modal('close')
             } else {
                 this.resetUI()
             }
@@ -917,6 +1008,7 @@ var app = new Vue({
             $('#informationModal').modal('close')
             $('#routeModal').modal('close')
             $('#threatModal').modal('close')
+            $('#emissionModal').modal('close')
             if (type === "information") {
                 this.status.information = exports.dbPointUpdate(type, uuid, this.editingLng, this.editingLat, this.pointDetailsEditor.getHtml(), this.editingPoint)
             }
@@ -925,6 +1017,9 @@ var app = new Vue({
             }
             if (type === "threats") {
                 this.status.threats = exports.dbPointUpdate(type, uuid, this.editingLng, this.editingLat, this.threatDetailsEditor.getHtml(), this.editingThreat)
+            }
+            if (type === "emissions") {
+                this.status.emissions = exports.dbPointUpdate(type, uuid, this.editingLng, this.editingLat, this.emissionDetailsEditor.getHtml(), this.editingEmission)
             }
             this.redrawMap()
         },
@@ -956,6 +1051,10 @@ var app = new Vue({
                     self.status.threats.push(threat)
                     dbAdd("threats", threat)
                 })
+                data.emissions.forEach(function (emission) {
+                    self.status.emissions.push(emission)
+                    dbAdd("threats", emission)
+                })
                 this.$refs.importState.value = null
                 console.log("Successfully imported Phaser state!")
             }
@@ -971,9 +1070,13 @@ var app = new Vue({
             this.status.emissions = []
             this.status.routes = []
             this.informationCollection = turf.featureCollection([])
+            this.threatCollection = turf.featureCollection([])
+            this.threatCirclesCollection = turf.featureCollection([])
+            this.threatCirclesCollection = turf.featureCollection([])
             this.routeBuildCollection = turf.featureCollection([])
             this.routeFinalCollection = turf.featureCollection([])
-            this.map.getSource('informationPoints').setData(this.informationCollection)
+            this.emissionsCollection = turf.featureCollection([])
+            this.redrawMap()
         },
         enterPhaseBuilder: function (phase) {
             if (phase != null) {
@@ -1018,8 +1121,7 @@ var app = new Vue({
             $(".map .lock").show()
             $('.activeMission').hide()
             $(".map .bullseye").hide()
-            this.informationCollection = turf.featureCollection([])
-            this.map.getSource('informationPoints').setData(this.informationCollection)
+            this.redrawMap()
         },
         changeCoordinateSystem: function (change) {
             if (change === 'true') {
@@ -1081,6 +1183,12 @@ var app = new Vue({
 
                 self.threatDetailsEditor = new Editor({
                     el: document.querySelector('#md-editor-threats'),
+                    previewStyle: 'vertical',
+                    height: '280px',
+                    initialEditType: 'wysiwyg'
+                })
+                self.emissionDetailsEditor = new Editor({
+                    el: document.querySelector('#md-editor-emissions'),
                     previewStyle: 'vertical',
                     height: '280px',
                     initialEditType: 'wysiwyg'
