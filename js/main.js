@@ -2,6 +2,7 @@ import * as mgrs from "mgrs"
 import * as uuid from "uuid"
 import Editor from "@toast-ui/editor"
 import * as exports from './db.js'
+import * as rustic from './rustic.js'
 Object.entries(exports).forEach(([name, exported]) => window[name] = exported);
 
 /* Object Models */
@@ -1160,6 +1161,15 @@ var app = new Vue({
                 $('select').formSelect()
                 self.initMap()
                 self.changeCoordinateSystem()
+
+                // Rustic tests
+                let orbit1 = new rustic.Orbit({lat: 30.613506292246157, lng: -86.9692216595807}, 55000, 'EO', {lat: 30.643611923663215, lng: -86.54965428900701, altitude: 0}, "SSM")
+                console.log(`EO NIIRs value: ${orbit1.calcNiirs()}`)
+                console.log(`EO Success % (detect|class|type): ${orbit1.calcPercentSuccess(orbit1.targetType, orbit1.sensor)}`)
+                let orbit2 = new rustic.Orbit({lat: 30.613506292246157, lng: -86.9692216595807}, 55000, 'SAR', {lat: 30.643611923663215, lng: -86.54965428900701, altitude: 0}, "SSM")
+                console.log(`SAR NIIRs value: ${orbit2.calcNiirs()}`)
+                console.log(`SAR Success % (detect|class|type): ${orbit2.calcPercentSuccess(orbit2.targetType, orbit2.sensor)}`)
+
                 setTimeout(function () {
                     $('.loading').addClass('animate__animated animate__fadeOut')
                     setTimeout(function () {
@@ -1193,6 +1203,7 @@ var app = new Vue({
                     height: '280px',
                     initialEditType: 'wysiwyg'
                 })
+
             });
 
             $(document).bind('keypress', function(event) {
