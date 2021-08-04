@@ -1,6 +1,12 @@
 /*
     Rustic.js v0.01
+
+    Description: Automatically determine the success of ISR flight paths and orbits 
+    based on imagery exploitation assessed success rates. Utilize this program to help
+    determine flight-point placement for collect against specific types of targets.
+
     Author: TSgt Matthew Reichardt (me@matthewreichardt.com)
+
     Rustic Base Version: 1.4
 */
 
